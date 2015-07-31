@@ -203,6 +203,19 @@ void usage(char *whoami, char *message) {
 "        multiple times to increase verbosity.\n"
 "  -V, --version\n"
 "        Write version information to stderr; and exit.\n\n"
+"\n"
+"Examples:\n\n"
+"    mwxml2sql -s imports/elwiki-20170401-stub-meta-history.xml.gz\n"
+"            -t imports/elwiki-20170401-pages-meta-history.xml.bz2\n"
+"            -f outfiles/elwiki-20170401-history.sql.gz -m 1.29\n"
+"This will generate pages, revs, text table sql files for import, using the\n"
+"full history files you have presumably already downloaded into the 'imports'\n"
+"directory, leaving the output files in the 'outfiles' directory.\n"
+"    mwxml2sql -s imports/enwikinews-20170401-stub-meta-current.xml.gz\n"
+"              -t imports/enwikinews-20170401-pages-meta-current.xml.bz2\n"
+"              -f outfiles/enwikinews-20170401-current.sql.gz -m 1.29 -S 90,91,92\n"
+"This command does the same but it skips items in namespaces 90, 91 and 92,\n"
+"which are used by LiquidThreads on some wikis.\n"
 "Report bugs in mwxml2sql to <https://phabricator.wikimedia.org/>.\n\n"
 "See also sql2txt(1), sqlfilter(1).\n\n";
   if (message) {
@@ -246,6 +259,13 @@ int main(int argc, char **argv) {
   char *mw_version = NULL;
   mw_version_t *mwv = NULL;
 
+  char *nstoskip = NULL;
+  int *ns_list = NULL;
+  int empty_list[1];
+  char *ns_no_commas = NULL;
+  int howmany = 0;
+  int i = 0;
+
   int pages_done = 0;
   int eof = 0;
   
@@ -263,6 +283,7 @@ int main(int argc, char **argv) {
     {"mysqlfile", required_argument, NULL, 'f'},
     {"mediawiki", required_argument, NULL, 'm'},
     {"nodrop", no_argument, NULL, 'n'},
+    {"nstoskip", required_argument, NULL, 'S'},
     {"pageid", required_argument, NULL, 'i'},
     {"stubs", required_argument, NULL, 's'},
     {"tableprefix", required_argument, NULL, 'p'},
@@ -273,7 +294,7 @@ int main(int argc, char **argv) {
   };
 
   while (1) {
-    optc=getopt_long(argc,argv,"cf:hi:m:np:s:t:vV", optvalues, &optindex);
+    optc=getopt_long(argc,argv,"cf:hi:m:np:s:S:t:vV", optvalues, &optindex);
     if (optc==-1) break;
 
     switch(optc) {
@@ -300,6 +321,9 @@ int main(int argc, char **argv) {
       break;
     case 's':
       stubs_file = optarg;
+      break;
+    case 'S':
+      nstoskip = optarg;
       break;
     case 't':
       text_file = optarg;
@@ -330,6 +354,36 @@ int main(int argc, char **argv) {
 
   if (!mw_version) {
     usage(argv[0], "missing required 'mediawiki' option");
+  }
+
+  /* expect comma sep string, split it, turn the chars into ints */
+  if (nstoskip) {
+    /* strdup so we don't write over the original this time */
+    ns_no_commas = strtok (strdup(nstoskip), ",");
+    i = 0;
+    while (ns_no_commas != NULL) {
+      ns_no_commas = strtok (NULL, ",");
+      i++;
+    }
+    howmany = i + 1; /* byte count including -1 at the end, rather than 0-based index */
+    ns_list = (int *) malloc(sizeof(int *) * howmany);    
+    if (!ns_list) {
+      fprintf(stderr,"Failed to get memory for list of namespaces to skip\n");
+      exit(1);
+    }
+    i = 0;
+    /* this time we don't need the original for anything afterwards */
+    ns_no_commas = strtok (nstoskip, ",");
+    while (ns_no_commas != NULL) {
+      ns_list[i++] = atoi(ns_no_commas);
+      ns_no_commas = strtok (NULL, ",");
+    }
+    ns_list[i] = -1;
+  }
+  else {
+    empty_list[0] = -1;
+    /* no namespaces to skip, we do them all */
+    ns_list = empty_list;
   }
   mwv = check_mw_version(mw_version);
   if (!mwv) {
@@ -419,7 +473,7 @@ int main(int argc, char **argv) {
   }
 
   while (! eof) {
-    result = do_page(stubs, text, text_compress, mysql_page, mysql_revs, mysql_text, s_info, verbose, tables, nodrop, start_page_id);
+    result = do_page(stubs, text, text_compress, mysql_page, mysql_revs, mysql_text, s_info, verbose, tables, nodrop, start_page_id, ns_list);
     if (!result) break;
     pages_done++;
     if (verbose && !(pages_done%1000)) fprintf(stderr,"%d pages processed\n", pages_done);

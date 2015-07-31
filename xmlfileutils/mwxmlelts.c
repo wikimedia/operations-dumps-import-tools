@@ -994,12 +994,13 @@ int find_page_with_id(input_file_t *f, char *id) {
        is successfully read
 */
 
-int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_file_t *sqlp, output_file_t *sqlr, output_file_t *sqlt, siteinfo_t *s, int verbose, tablenames_t *t, int insert_ignore, char*start_page_id) {
+int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_file_t *sqlp, output_file_t *sqlr, output_file_t *sqlt, siteinfo_t *s, int verbose, tablenames_t *t, int insert_ignore, char*start_page_id, int *ns_to_skip) {
   page_t p;
   char out_buf[1024]; /* seriously how long can username plus title plus the rest of the cruft be? */
   int want_text = 0;
   char escaped_title[FIELD_LEN*2];
   int skip = 0;
+  int i = 0;
 
   p.title[0] = '\0';
   p.ns[0] = '\0';
@@ -1050,6 +1051,16 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
       if (strlen(start_page_id) > strlen(p.id)) skip = 1;
       else if (strlen(start_page_id) < strlen(p.id)) skip=0;
       else if (strcmp(start_page_id, p.id) > 0) skip = 1;
+    }
+    /* skip specified namespaces */
+    i = 0;
+    /* end of this array is marked by -1 */
+    while (ns_to_skip[i] >= 0) {
+      if (atoi(p.ns) == ns_to_skip[i]) {
+	skip = 1;
+	break;
+      }
+      i++;
     }
     if (skip) {
       if (verbose > 1) fprintf(stderr,"skipping page %s by user request\n", p.id);

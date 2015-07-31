@@ -244,7 +244,7 @@ int find_text_in_rev(input_file_t *f);
 int do_contributor(input_file_t *f, contributor_t *c, int verbose);
 int do_text(input_file_t *f,  output_file_t *sqlt, revision_t *r, int verbose, tablenames_t *t, int insrt_ignore, int get_sha1, int get_text_len, int text_commpress);
 int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, output_file_t *sqlp, output_file_t *sqlr, output_file_t *sqlt, page_t *p, int verbose, tablenames_t *t, int insert_ignore);
-int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_file_t *sqlp, output_file_t *sqlr, output_file_t *sqlt, siteinfo_t *s_info, int verbose, tablenames_t *t, int insert_ignore, char *start_page_id);
+int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_file_t *sqlp, output_file_t *sqlr, output_file_t *sqlt, siteinfo_t *s_info, int verbose, tablenames_t *t, int insert_ignore, char *start_page_id, int *ns_list);
 int do_namespace(input_file_t *f, namespace_t *n, int verbose);
 int do_namespaces(input_file_t *f, siteinfo_t *s, int verbose);
 int do_siteinfo(input_file_t *f, siteinfo_t **s, int verbose);
