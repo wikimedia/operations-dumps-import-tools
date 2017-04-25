@@ -20,19 +20,19 @@ class Path(object):
     """Make files or paths which contain the lang code,
     project name and date in the filename."""
 
-    def __init__(self, dirName, project=None, lang=None, date=None):
+    def __init__(self, dirname, project=None, lang=None, date=None):
         """Constructor.  Arguments:
-        dirName   --  directory name in which files will be located (abs or rel path)
+        dirname   --  directory name in which files will be located (abs or rel path)
         project   --  name of wiki project type, i.e. 'wikipedia', 'wiktionary', etc.
         lang      --  language code of wiki, i.e. 'en', 'el', etc.
         date      --  datestring in some nice format"""
 
-        self.dir = dirName
+        self.dir = dirname
         self.project = project
         self.lang = lang
         self.date = date
 
-    def makePath(self, filename):
+    def make_path(self, filename):
         """Create a pathname with the filename in the format
         "langcode-project-date-restofname" in the directory
         given to the object when instantiated
@@ -41,7 +41,7 @@ class Path(object):
         return(os.path.join(self.dir, "-".join(filter(None, [self.lang, self.project,
                                                              self.date, filename]))))
 
-    def makeFile(self, filename):
+    def make_file(self, filename):
         """Create a filename in the format "langcode-project-date-restofname
         Returns the filename"""
 
@@ -61,7 +61,7 @@ class Command(object):
         self.dryrun = dryrun
         self.verbose = verbose
 
-    def runCommand(self, command):
+    def run_command(self, command):
         """Run a command, capturing output to stdout and stderr,
         optionally displaying stderr output as it is received
         On nonzero return code from the command, displays an error on stderr.
@@ -70,15 +70,15 @@ class Command(object):
         """
 
         if type(command).__name__ == "list":
-            commandString = " ".join(command)
+            command_string = " ".join(command)
         else:
-            commandString = command
+            command_string = command
         if (self.dryrun or self.verbose):
             if self.dryrun:
-                sys.stderr.write("would run %s\n" % commandString)
+                sys.stderr.write("would run %s\n" % command_string)
                 return (None, None)
             if self.verbose:
-                sys.stderr.write("about to run %s\n" % commandString)
+                sys.stderr.write("about to run %s\n" % command_string)
 
         self._proc = Popen(command, shell=False, stdout=PIPE, stderr=PIPE)
 
@@ -86,26 +86,26 @@ class Command(object):
         self._poller.register(self._proc.stdout, select.POLLIN | select.POLLPRI)
         self._poller.register(self._proc.stderr, select.POLLIN | select.POLLPRI)
         self.polledfds = 2  # keep track of active fds
-        self.pollAndWait()
+        self.poll_and_wait()
 
         if self._proc.returncode:
             sys.stderr.write("command '%s failed with return code %s\n"
-                             % (commandString, self._proc.returncode))
+                             % (command_string, self._proc.returncode))
 
         # let the caller decide whether to bail or not
         return (self._proc.returncode, self.output)
 
-    def pollAndWait(self):
+    def poll_and_wait(self):
         """Collect output to stdout from a process and optionally
         display messages to stderr from the process, until it
        exits or an error is encountered or its stdout and stderr are closed"""
 
         self.output = ""
         while self.polledfds:  # if there are active fds
-            self.pollOnce()
+            self.poll_once()
         self._proc.wait()
 
-    def pollOnce(self):
+    def poll_once(self):
         """poll process, collect stdout, optionally display stderr,
         waiting up to a second for an event"""
 
@@ -128,34 +128,34 @@ class Converter(object):
     """Convert MediaWiki stub and content XML to page, revision
     and sql tables"""
 
-    def __init__(self, mwxml2sql, outputDir, verbose):
+    def __init__(self, mwxml2sql, output_dir, verbose):
         """Constructor.  Arguments:
         mwxml2sql   -- path to mwxml2sql program which does the conversion
-        outputDir   -- output directory into which to place the sql files
+        output_dir   -- output directory into which to place the sql files
         verbose     -- display progress messages about what is being done"""
 
         self.mwxml2sql = mwxml2sql
-        self.outputDir = outputDir
+        self.output_dir = output_dir
         self.verbose = verbose
         self.runner = Command(verbose=self.verbose)
 
-    def convertContent(self, contentPath, stubsPath, mwVersion):
+    def convert_content(self, content_path, stubs_path, mw_version):
         """Run the command to convert XML to sql. Raises excption
         on error from the command.  Arguments:
-        contentPath  -- path to XML content file (containing full text of pages)
-        stubsPath    -- path to XML stubs file corresponding to content file
-        mwVersion    -- string eg 1.20 representing the version of MediaWiki for
+        content_path  -- path to XML content file (containing full text of pages)
+        stubs_path    -- path to XML stubs file corresponding to content file
+        mw_version    -- string eg 1.20 representing the version of MediaWiki for
                         which sql tables will be produced
                         Note that for 1.21 and on, the fields page_content_model,
                         rev_content_format, rev_content_model will always be written,
                         even if the user wishes to install into a wiki with
                         $wgContentHandlerUseDB set to false"""
 
-        command = [self.mwxml2sql, '-s', stubsPath, '-t', contentPath,
-                   '-f', os.path.join(self.outputDir, "filteredsql.gz"), "-m", mwVersion]
+        command = [self.mwxml2sql, '-s', stubs_path, '-t', content_path,
+                   '-f', os.path.join(self.output_dir, "filteredsql.gz"), "-m", mw_version]
         if self.verbose:
             command.append('--verbose')
-        (result, junk) = self.runner.runCommand(command)
+        (result, junk) = self.runner.run_command(command)
         if (self.verbose):
             sys.stderr.write(junk)
         if result:
@@ -169,43 +169,43 @@ class Stubber(object):
     in the text tag (as dumps produced by Special:Export do)
     and the sha1 tag."""
 
-    def __init__(self, outputDir, verbose):
+    def __init__(self, output_dir, verbose):
         """Constructor. Arguments:
-        outputDir  --  directory where files will be written
+        output_dir  --  directory where files will be written
         verbose    --  display progress messages"""
 
-        self.outputDir = outputDir
+        self.output_dir = output_dir
         self.verbose = verbose
         self.runner = Command(verbose=self.verbose)
 
-    def writeStubAndPageIds(self, contentPath, stubsPath, pageIdsPath):
+    def write_stub_and_page_ids(self, content_path, stubs_path, page_ids_path):
         """Write an XML stub file (omitting text content) and a
         list of page ids, from a MediaWiki XML page content file.
         Arguments:
-        contentPath  -- path to the XML page content file to read
-        stubsPath    -- path to the stubs file to write
-        pageIdsPath  -- path to the page ids file to write"""
+        content_path  -- path to the XML page content file to read
+        stubs_path    -- path to the stubs file to write
+        page_ids_path  -- path to the page ids file to write"""
 
-        pagePattern = "^\s*<page>"
-        compiledPagePattern = re.compile(pagePattern)
-        revisionPattern = "^\s*<revision>"
-        compiledRevisionPattern = re.compile(revisionPattern)
-        idPattern = "^\s*<id>(?P<i>.+)</id>\s*\n$"
-        compiledIdPattern = re.compile(idPattern)
-        textPattern = '^(?P<s>\s*)<text\s+[^<>/]*bytes="(?P<b>[0-9]+)"'
-        compiledTextPattern = re.compile(textPattern)
+        page_pattern = "^\s*<page>"
+        compiled_page_pattern = re.compile(page_pattern)
+        revision_pattern = "^\s*<revision>"
+        compiled_revision_pattern = re.compile(revision_pattern)
+        id_pattern = "^\s*<id>(?P<i>.+)</id>\s*\n$"
+        compiled_id_pattern = re.compile(id_pattern)
+        text_pattern = '^(?P<s>\s*)<text\s+[^<>/]*bytes="(?P<b>[0-9]+)"'
+        compiled_text_pattern = re.compile(text_pattern)
 
-        inFd = File.openInput(contentPath)
-        outFd = File.openOutput(stubsPath)
-        outPageIdFd = File.openOutput(pageIdsPath)
-        currentTitle = None
-        currentTextId = None
-        pageId = None
+        in_fd = File.open_input(content_path)
+        out_fd = File.open_output(stubs_path)
+        outpage_id_fd = File.open_output(page_ids_path)
+        current_title = None
+        current_text_id = None
+        page_id = None
 
-        expectRevId = False
-        expectPageId = False
+        expect_rev_id = False
+        expect_page_id = False
 
-        for line in inFd:
+        for line in in_fd:
             # FIXME we could jus calculate text len  if the output is missing
             # the bytes attr. (as in dumps not from Special:Export)
             # format in content file:
@@ -213,218 +213,219 @@ class Stubber(object):
             # format wanted for stubs file:
             #   <text id="11248" bytes="9" />
             if '<' in line:
-                result = compiledTextPattern.match(line)
+                result = compiled_text_pattern.match(line)
                 if result:
                     line = result.group("s") + '<text id="%s" bytes="%s" />\n' % (
-                        currentTextId, result.group("b"))
-                    outFd.write(line)
+                        current_text_id, result.group("b"))
+                    out_fd.write(line)
                     continue
                 elif '</text' in line:
                     continue
 
-                result = compiledPagePattern.match(line)
+                result = compiled_page_pattern.match(line)
                 if result:
-                    expectPageId = True
-                    outFd.write(line)
+                    expect_page_id = True
+                    out_fd.write(line)
                     continue
-                result = compiledRevisionPattern.match(line)
+                result = compiled_revision_pattern.match(line)
                 if result:
-                    expectRevId = True
-                    outFd.write(line)
+                    expect_rev_id = True
+                    out_fd.write(line)
                     continue
-                if expectPageId:
-                    result = compiledIdPattern.match(line)
+                if expect_page_id:
+                    result = compiled_id_pattern.match(line)
                     if result:
-                        outPageIdFd.write("1:%s\n" % result.group("i"))
-                        expectPageId = False
-                    outFd.write(line)
+                        outpage_id_fd.write("1:%s\n" % result.group("i"))
+                        expect_page_id = False
+                    out_fd.write(line)
                     continue
-                if expectRevId:
-                    result = compiledIdPattern.match(line)
+                if expect_rev_id:
+                    result = compiled_id_pattern.match(line)
                     if result:
-                        currentTextId = result.group("i")
-                        expectRevId = False
-                    outFd.write(line)
+                        current_text_id = result.group("i")
+                        expect_rev_id = False
+                    out_fd.write(line)
                     continue
-                outFd.write(line)
+                out_fd.write(line)
             else:
                 continue  # these are lines of text, we can skip them
-        inFd.close()
-        outFd.close()
-        outPageIdFd.close()
+        in_fd.close()
+        out_fd.close()
+        outpage_id_fd.close()
 
 
 class Retriever(object):
     """Retrieve page titles, page content, or namespace information from a wiki using
     the MediaWiki api"""
 
-    def __init__(self, wcr, outputDir, langCode, project, verbose):
+    def __init__(self, wcr, output_dir, lang_code, project, verbose):
         """Constructor. Arguments:
-        outputDir  --  directory where files will be written
+        output_dir  --  directory where files will be written
         verbose    --  display progress messages"""
         self.wcr = wcr
-        self.outputDir = outputDir
-        self.langCode = langCode
+        self.output_dir = output_dir
+        self.lang_code = lang_code
         self.project = project
         self.verbose = verbose
         self.runner = Command(verbose=self.verbose)
 
-    def getTitlesEmbeddedIn(self, template, outputFile, escaped=False):
+    def get_titles_embedded_in(self, template, output_file, escaped=False):
         """Run command to retrieve all page titles using a given template.
         Returns the name of the output file produced.
         On error, raises an exception.
         Arguments:
         template    -- name of the template, includes the 'Template:' string or
                        its localized equivalent on the wiki
-        outputFile  -- name of file (not full path) for the list of titles
+        output_file  -- name of file (not full path) for the list of titles
         escaped     -- whether to sqlescape these titles"""
 
         command = ['python', self.wcr, '-q', 'embeddedin', '-p', template, '-o',
-                   self.outputDir, '-O', outputFile, '-w', "%s.%s.org" % (self.langCode, self.project)]
+                   self.output_dir, '-O', output_file, '-w',
+                   "%s.%s.org" % (self.lang_code, self.project)]
 
         if escaped:
             command.append('--sqlescaped')
         if self.verbose:
             command.append('--verbose')
-        (result, titlesPath) = self.runner.runCommand(command)
+        (result, titles_path) = self.runner.run_command(command)
         if result:
             raise WikiContentErr("Error trying to retrieve page titles with embedding\n")
         else:
-            titlesPath = titlesPath.strip()
-            return titlesPath
+            titles_path = titles_path.strip()
+            return titles_path
 
-    def getTitlesInNamespace(self, ns, outputFile, escaped=False):
+    def get_titles_in_namespace(self, ns, output_file, escaped=False):
         """Run command to retrieve all page titles in a given namespace.
         Returns the name of the output file produced.
         On error, raises an exception.
         Arguments:
         ns          -- number of the namespace.
-        outputFile  -- name of file (not full path) for the list of titles
+        output_file  -- name of file (not full path) for the list of titles
         escaped     -- whether to sqlescape these titles"""
 
-        command = ['python', self.wcr, '-q', 'namespace', '-p', ns, '-o', self.outputDir,
-                   '-O', outputFile, '-w', "%s.%s.org" % (self.langCode, self.project)]
+        command = ['python', self.wcr, '-q', 'namespace', '-p', ns, '-o', self.output_dir,
+                   '-O', output_file, '-w', "%s.%s.org" % (self.lang_code, self.project)]
         if escaped:
             command.append('--sqlescaped')
         if self.verbose:
             command.append('--verbose')
-        (result, titlesPath) = self.runner.runCommand(command)
+        (result, titles_path) = self.runner.run_command(command)
         if result:
             raise WikiContentErr("Error trying to retrieve page titles in namespace\n")
         else:
-            titlesPath = titlesPath.strip()
-            return titlesPath
+            titles_path = titles_path.strip()
+            return titles_path
 
-    def getContent(self, titlesPath, outputFile):
+    def get_content(self, titles_path, output_file):
         """Run command to retrieve all page content for a list of page titles.
         Returns the name of the output file produced.
         On error, raises an exception.
         Arguments:
-        titlesPath   -- full path to the list of page titles
-        outputFile   -- name of file (not full path) for the page content"""
+        titles_path   -- full path to the list of page titles
+        output_file   -- name of file (not full path) for the page content"""
 
-        command = ['python', self.wcr, '-q', 'content', '-p', titlesPath, '-o', self.outputDir,
-                   "-O", outputFile, '-w', "%s.%s.org" % (self.langCode, self.project)]
+        command = ['python', self.wcr, '-q', 'content', '-p', titles_path, '-o', self.output_dir,
+                   "-O", output_file, '-w', "%s.%s.org" % (self.lang_code, self.project)]
         if self.verbose:
             command.append('--verbose')
-        (result, contentPath) = self.runner.runCommand(command)
+        (result, content_path) = self.runner.run_command(command)
         if result:
             raise WikiContentErr("Error trying to retrieve content\n")
         else:
-            contentPath = contentPath.strip()
-            return contentPath
+            content_path = content_path.strip()
+            return content_path
 
-    def getNsDict(self):
+    def get_ns_dict(self):
         """Retrieve namespace informtion for a wiki via the MediaWiki api
         and store in in dict form.
         On error raises an exception."""
 
         # http://en.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=namespaces&format=json
-        apiUrl = ("http://" + self.langCode + "." + self.project + "." + "org/w/api.php" +
-                  "?action=query&meta=siteinfo&siprop=namespaces&format=json")
-        nsDict = {}
-        ufd = urllib.urlopen(apiUrl)
+        api_url = ("http://" + self.lang_code + "." + self.project + "." + "org/w/api.php" +
+                   "?action=query&meta=siteinfo&siprop=namespaces&format=json")
+        ns_dict = {}
+        ufd = urllib.urlopen(api_url)
         if str(ufd.getcode()).startswith("2"):
             output = ufd.read()
             ufd.close()
-            siteInfo = json.loads(output)
-            if 'query' not in siteInfo or 'namespaces' not in siteInfo['query']:
+            site_info = json.loads(output)
+            if 'query' not in site_info or 'namespaces' not in site_info['query']:
                 raise WikiContentErr("Error trying to get namespace information from api\n")
-            for k in siteInfo['query']['namespaces'].keys():
-                if '*' in siteInfo['query']['namespaces'][k]:
-                    nsDict[k] = siteInfo['query']['namespaces'][k]['*'].encode('utf8')
+            for k in site_info['query']['namespaces'].keys():
+                if '*' in site_info['query']['namespaces'][k]:
+                    ns_dict[k] = site_info['query']['namespaces'][k]['*'].encode('utf8')
                 else:
                     raise WikiContentErr("Error trying to get parse namespace information\n")
-            return nsDict
+            return ns_dict
         else:
             code = ufd.getcode()
             ufd.close()
             raise WikiContentErr("Error trying to retrieve namespace info: %s\n" % code)
 
-        return nsDict
+        return ns_dict
 
 
 class Titles(object):
     """Manipulate lists and dicts of wiki page titles"""
 
-    def __init__(self, nsDict, nsDictByString):
+    def __init__(self, ns_dict, ns_dict_by_string):
         """Constructor.  Arguments:
-        nsDict          -- dictionary of namespace entries, {num1: name1, num2: name2...}
-        nsDictByString  -- dictionary of namespace entries, {name1: num1, name2: num2...}
+        ns_dict          -- dictionary of namespace entries, {num1: name1, num2: name2...}
+        ns_dict_by_string  -- dictionary of namespace entries, {name1: num1, name2: num2...}
         Note that the namespace numbers are strings of digits, not ints"""
 
-        self.nsDict = nsDict
-        self.nsDictByString = nsDictByString
+        self.ns_dict = ns_dict
+        self.ns_dict_by_string = ns_dict_by_string
 
         self.list = []  # list of all titles but templates, with namespace prefix
-        self.listTemplates = []  # list of all template titles, with namespace prefix
+        self.list_templates = []  # list of all template titles, with namespace prefix
         self.dict = {}  # dict without namespace prefix but values are {ns1: True, ns2: True} etc
 
-    def addRelatedTitlesFromFile(self, filename, relatedNsList, nsList):
+    def add_related_titles_from_file(self, filename, related_ns_list, ns_list):
         """Read list of titles from file, for those in one of the
         specified namespaces, convert the title to one from its related
         namespace (i.e. if it was in Category talk, convert to Category,
         if it was in File talk, convert to File, etc.) and add to title
         list and dict. Arguments:
         filename       -- full path to list of titles
-        relatedNsList  -- list of namespaces wanted, e.g. ["4", "6", "12"]
-        nsList         -- list of namespaces to convert from, in the same order as the
+        related_ns_list  -- list of namespaces wanted, e.g. ["4", "6", "12"]
+        ns_list         -- list of namespaces to convert from, in the same order as the
                           related NsList, e.g. ["5", "7", "13"]"""
 
         # don't pass templates in here, we do those separately
         # because it could be a huge list and we want the user
         # to be able to save and reuse it
-        fd = File.openInput(filename)
+        fd = File.open_input(filename)
         for line in fd:
             line = line.strip()
             sep = line.find(":")
             if sep != -1:
                 prefix = line[:sep]
-                if prefix in self.nsDictByString:
+                if prefix in self.ns_dict_by_string:
                     # main, file, category, project talk namespaces
-                    if self.nsDictByString[prefix] in relatedNsList:
-                        noPrefixTitle = line[sep + 1:]
+                    if self.ns_dict_by_string[prefix] in related_ns_list:
+                        no_prefix_title = line[sep + 1:]
                         # convert to file, category, project namespace
-                        relatedNs = str(int(self.nsDictByString[prefix]) - 1)
-                        if (self.nsDict[relatedNs]):
-                            newTitle = self.nsDict[relatedNs] + ":" + noPrefixTitle
+                        related_ns = str(int(self.ns_dict_by_string[prefix]) - 1)
+                        if (self.ns_dict[related_ns]):
+                            new_title = self.ns_dict[related_ns] + ":" + no_prefix_title
                         else:
-                            newTitle = noPrefixTitle  # main namespace titles
-                        self.list.append(newTitle)
-                        if noPrefixTitle in self.dict:
-                            self.dict[noPrefixTitle][relatedNs] = True
+                            new_title = no_prefix_title  # main namespace titles
+                        self.list.append(new_title)
+                        if no_prefix_title in self.dict:
+                            self.dict[no_prefix_title][related_ns] = True
                         else:
-                            self.dict[noPrefixTitle] = {relatedNs: True}
+                            self.dict[no_prefix_title] = {related_ns: True}
                     # file, category, project talk namespaces
-                    elif self.nsDictByString[prefix] in nsList:
-                        ns = self.nsDictByString[prefix]
-                        noPrefixTitle = line[sep + 1:]
-                        self.list.append(noPrefixTitle)
-                        if noPrefixTitle in self.dict:
-                            self.dict[noPrefixTitle][ns] = True
+                    elif self.ns_dict_by_string[prefix] in ns_list:
+                        ns = self.ns_dict_by_string[prefix]
+                        no_prefix_title = line[sep + 1:]
+                        self.list.append(no_prefix_title)
+                        if no_prefix_title in self.dict:
+                            self.dict[no_prefix_title][ns] = True
                         else:
-                            self.dict[noPrefixTitle] = {ns: True}
-            elif "0" in nsList:
+                            self.dict[no_prefix_title] = {ns: True}
+            elif "0" in ns_list:
                 # main namespace, won't be caught above
                 self.list.append(line)
                 if line in self.dict:
@@ -433,7 +434,7 @@ class Titles(object):
                     self.dict[line] = {"0": True}
         fd.close()
 
-    def addTitlesFromFile(self, filename, ns):
+    def add_titles_from_file(self, filename, ns):
         """add titles from a file to the title list and dict.
         Note that template titles get added to a different title list
         than the rest, for separate processing
@@ -442,62 +443,62 @@ class Titles(object):
         ns         -- number (string of digits) of namespace of page titles to
                       grab from file"""
 
-        fd = File.openInput(filename)
-        prefix = self.nsDict[ns] + ":"
-        prefixLen = len(prefix)
+        fd = File.open_input(filename)
+        prefix = self.ns_dict[ns] + ":"
+        prefix_len = len(prefix)
         for line in fd:
             if line.startswith(prefix):
                 if ns == "10":  # special case bleah
-                    self.listTemplates.append(line[:-1])  # lose newline
+                    self.list_templates.append(line[:-1])  # lose newline
                 else:
                     self.list.append(line[:-1])  # lose newline
-                noPrefixTitle = line[prefixLen:-1]
-                if noPrefixTitle in self.dict:
-                    self.dict[noPrefixTitle][ns] = True
+                no_prefix_title = line[prefix_len:-1]
+                if no_prefix_title in self.dict:
+                    self.dict[no_prefix_title][ns] = True
                 else:
-                    self.dict[noPrefixTitle] = {ns: True}
+                    self.dict[no_prefix_title] = {ns: True}
 
     def uniq(self):
         """Remove duplicates from the lists of titles"""
 
         self.list = list(set(self.list))
-        self.listTemplates = list(set(self.listTemplates))
+        self.list_templates = list(set(self.list_templates))
 
 
 class Filter(object):
     """Filter dumps of MediaWiki sql tables against a list f pageids, keeping
     only the rows for pageids in the list"""
 
-    def __init__(self, sqlFilter, outputDir, verbose):
+    def __init__(self, sql_filter, output_dir, verbose):
         """Constructor. Arguments:
-        outputDir  --  directory where files will be written
+        output_dir  --  directory where files will be written
         verbose    --  display progress messages"""
-        self.sqlFilter = sqlFilter
-        self.outputDir = outputDir
+        self.sql_filter = sql_filter
+        self.output_dir = output_dir
         self.verbose = verbose
         self.runner = Command(verbose=self.verbose)
 
-    def filter(self, input, output, filterPath):
+    def filter(self, input, output, filter_path):
         """Run command to filter an sql table dump against certain values,
         optinally writing out only certain columns from each row.
         Arguments:
         input           -- full path to sql file for input
         output          -- filename (not full path) to write filtered sql output
-        filterPath      -- full path to file containing filter values in form column:value
+        filter_path      -- full path to file containing filter values in form column:value
                            (starting with column 1)"""
 
-        command = [self.sqlFilter, '-s', input, '-o', os.path.join(self.outputDir, output)]
-        if (filterPath):
-            command.extend(['-f', filterPath])
+        command = [self.sql_filter, '-s', input, '-o', os.path.join(self.output_dir, output)]
+        if (filter_path):
+            command.extend(['-f', filter_path])
         if self.verbose:
             command.append('--verbose')
-            (result, junk) = self.runner.runCommand(command)
+            (result, junk) = self.runner.run_command(command)
         if result:
             raise WikiContentErr("Error trying to filter sql tables\n")
         return
 
 
-def extendedUsage():
+def extended_usage():
     """Show extended usage information, explaining how to
     run just certain steps of this program"""
 
@@ -610,7 +611,7 @@ Options:
     sys.stderr.write(usage_message)
 
     if (extended):
-        extendedUsage()
+        extended_usage()
 
     usage_message = """Example usage:
 python wikicontent2sql.py --template 'Template:Wikiproject Lepidoptera' \\
@@ -619,117 +620,117 @@ python wikicontent2sql.py --template 'Template:Wikiproject Lepidoptera' \\
     sys.exit(1)
 
 
-def initSteps(optDict):
+def init_steps(opt_dict):
     """Initialize vars for running each step, by default we will run them"""
 
 
-def processStepOption(stepToSkip, odict):
+def process_step_option(step_to_skip, odict):
     """Process options that specify skipping a step.
     Arguments:
-    stepToSkip -- name of the option without the leading '--'
+    step_to_skip -- name of the option without the leading '--'
                   and without the 'no'"""
 
-    if stepToSkip == "retrievetitles":
-        odict['retrieveTitles'] = False
-    elif stepToSkip == "converttitles":
-        odict['convertTitles'] = False
-    elif stepToSkip == "retrievecontent":
-        odict['retrieveContent'] = False
-    elif stepToSkip == "makestubs":
-        odict['makeStubs'] = False
-    elif stepToSkip == "convertxml":
-        odict['convertXML'] = False
-    elif stepToSkip == "filtersql":
-        odict['filterSql'] = False
+    if step_to_skip == "retrievetitles":
+        odict['retrieve_titles'] = False
+    elif step_to_skip == "converttitles":
+        odict['convert_titles'] = False
+    elif step_to_skip == "retrievecontent":
+        odict['retrieve_content'] = False
+    elif step_to_skip == "makestubs":
+        odict['make_stubs'] = False
+    elif step_to_skip == "convertxml":
+        odict['convert_xml'] = False
+    elif step_to_skip == "filtersql":
+        odict['filter_sql'] = False
 
 
-def processFileOption(fileOpt, value, odict):
+def process_file_option(file_opt, value, odict):
     """Process options specifying output files to reuse.
     Raiss exception if the file doesn't exist.
     Arguments:
-    fileOpt  -- the name of the file option without the leading '--'
+    file_opt  -- the name of the file option without the leading '--'
     value    -- the file path"""
 
     if not os.path.exists(value):
-        usage("specified file %s for %s does not exist or is not a file" % (value, fileOpt))
+        usage("specified file %s for %s does not exist or is not a file" % (value, file_opt))
 
-    if fileOpt == "titles":
-        odict['titlesPath'] = value
-    elif fileOpt == "mwtitles":
-        odict['mediawikiTitlesPath'] = value
-    elif fileOpt == "mdltitles":
-        odict['moduleTitlesPath'] = value
-    elif fileOpt == "tmpltitles":
-        odict['templateTitlesPath'] = value
-    elif fileOpt == "titleswithprefix":
-        odict['mainTitlesWithPrefixPath'] = value
-    elif fileOpt == "tmpltitleswithprefix":
-        odict['tmplTitlesWithPrefixPath'] = value
-    elif fileOpt == "maincontent":
-        odict['mainContentPath'] = value
-    elif fileOpt == "tmplcontent":
-        odict['templateContentPath'] = value
-    elif fileOpt == "content":
-        odict['contentPath'] = value
-    elif fileOpt == "stubs":
-        odict['stubsPath'] = value
-    elif fileOpt == "pageids":
-        odict['pageIdsPath'] = value
+    if file_opt == "titles":
+        odict['titles_path'] = value
+    elif file_opt == "mwtitles":
+        odict['mediawiki_titles_path'] = value
+    elif file_opt == "mdltitles":
+        odict['module_titles_path'] = value
+    elif file_opt == "tmpltitles":
+        odict['template_titles_path'] = value
+    elif file_opt == "titleswithprefix":
+        odict['main_titles_with_prefix_path'] = value
+    elif file_opt == "tmpltitleswithprefix":
+        odict['tmpl_titles_with_prefix_path'] = value
+    elif file_opt == "maincontent":
+        odict['main_ccontent_path'] = value
+    elif file_opt == "tmplcontent":
+        odict['template_content_path'] = value
+    elif file_opt == "content":
+        odict['content_path'] = value
+    elif file_opt == "stubs":
+        odict['stubs_path'] = value
+    elif file_opt == "pageids":
+        odict['page_ids_path'] = value
 
 
-if __name__ == "__main__":
-
+def do_main():
     o = {}  # stash all opt vars in here
 
     # init main opt vars
-    for opt in ['template', 'sqlFiles', 'mwVersion', 'outputDir', 'username', 'password']:
+    for opt in ['template', 'sql_files', 'mw_version', 'output_dir', 'username', 'password']:
         o[opt] = None
 
     o['project'] = "wikipedia"
-    o['langCode'] = "en"
-    o['batchSize'] = 500
+    o['lang_code'] = "en"
+    o['batch_size'] = 500
 
     cwd = Path(os.getcwd())
-    o['sqlfilter'] = cwd.makePath("sqlfilter")
-    o['wcr'] = cwd.makePath("wikiretriever.py")
-    o['mwxml2sql'] = cwd.makePath("mwxml2sql")
+    o['sqlfilter'] = cwd.make_path("sqlfilter")
+    o['wcr'] = cwd.make_path("wikiretriever.py")
+    o['mwxml2sql'] = cwd.make_path("mwxml2sql")
 
     # init step opt vars
-    for opt in ['retrieveTitles', 'convertTitles', 'retrieveContent', 'makeStubs',
-                'convertXML', 'filterSql']:
+    for opt in ['retrieve_titles', 'convert_titles', 'retrieve_content', 'make_stubs',
+                'convert_xml', 'filter_sql']:
         o[opt] = True
 
     # init file opt vars
-    for opt in ['titlesPath', 'mediawikiTitlesPath', 'moduleTitlesPath', 'templateTitlesPath',
-                'mainTitlesWithPrefixPath', 'tmplTitlesWithPrefixPath', 'mainContentPath',
-                'templateContentPath', 'contentPath', 'stubsPath', 'pageIdsPath']:
+    for opt in ['titles_path', 'mediawiki_titles_path', 'module_titles_path', 'template_titles_path',
+                'main_titles_with_prefix_path', 'tmpl_titles_with_prefix_path', 'main_content_path',
+                'template_content_path', 'content_path', 'stubs_path', 'page_ids_path']:
         o[opt] = None
 
     verbose = False
 
     # option handling
-    mainOptions = ["template=", "sqlfiles=", "mwversion=", "lang=",
-                   "project=", "batchsize=", "output=", "auth="]
-    cmdOptions = ["sqlfilter=", "mwxml2sql=", "wcr="]
+    main_options = ["template=", "sqlfiles=", "mwversion=", "lang=",
+                    "project=", "batchsize=", "output=", "auth="]
+    cmd_options = ["sqlfilter=", "mwxml2sql=", "wcr="]
 
     steps = ["retrievetitles", "converttitles", "retrievecontent", "makestubs",
              "convertxml", "filtersql"]
-    skipStepFlags = ["no" + s for s in steps]
+    skip_step_flags = ["no" + s for s in steps]
 
-    convertTitlesOptions = ["titles=", "mwtitles=", "mdltitles=", "tmpltitles="]
-    retrieveContentOptions = ["titleswithprefix=", "tmpltitleswithprefix="]
-    makeStubsOptions = ["maincontent=", "tmplcontent=", "content="]
-    convertXMLfilterSqlOptions = ["stubs=", "pageids="]
+    convert_titles_options = ["titles=", "mwtitles=", "mdltitles=", "tmpltitles="]
+    retrieve_content_options = ["titleswithprefix=", "tmpltitleswithprefix="]
+    make_stubs_options = ["maincontent=", "tmplcontent=", "content="]
+    convert_xml_filter_sql_options = ["stubs=", "pageids="]
 
-    files = [fopt[:-1] for fopt in convertTitlesOptions + retrieveContentOptions +
-             makeStubsOptions + convertXMLfilterSqlOptions]
+    files = [fopt[:-1] for fopt in convert_titles_options + retrieve_content_options +
+             make_stubs_options + convert_xml_filter_sql_options]
 
-    miscFlags = ["verbose", "help", "extendedhelp"]
+    misc_flags = ["verbose", "help", "extendedhelp"]
 
-    allOptions = (mainOptions + cmdOptions + skipStepFlags + convertTitlesOptions +
-                  retrieveContentOptions + makeStubsOptions + convertXMLfilterSqlOptions + miscFlags)
+    all_options = (main_options + cmd_options + skip_step_flags + convert_titles_options +
+                   retrieve_content_options + make_stubs_options +
+                   convert_xml_filter_sql_options + misc_flags)
     try:
-        (options, remainder) = getopt.gnu_getopt(sys.argv[1:], "", allOptions)
+        (options, remainder) = getopt.gnu_getopt(sys.argv[1:], "", all_options)
     except:
         usage("Unknown option specified")
 
@@ -739,19 +740,19 @@ if __name__ == "__main__":
         if opt == "--template":
             o['template'] = val
         elif opt == "--sqlfiles":
-            o['sqlFiles'] = val
+            o['sql_files'] = val
         elif opt == "--mwversion":
-            o['mwVersion'] = val
+            o['mw_version'] = val
         elif opt == "--lang":
-            o['langCode'] = val
+            o['lang_code'] = val
         elif opt == "--project":
             o['project'] = val
         elif opt == "--batchsize":
             if not val.isdigit():
                 usage("batch size must be a number")
-            o['batchSize'] = int(val)
+            o['batch_size'] = int(val)
         elif opt == "--output":
-            o['outputDir'] = val
+            o['output_dir'] = val
         elif opt == "--auth":
             if ':' in val:
                 o['username'], o['password'] = val.split(':')
@@ -768,11 +769,11 @@ if __name__ == "__main__":
 
         # step options
         elif opt.startswith("--no"):
-            processStepOption(opt[4:], o)
+            process_step_option(opt[4:], o)
 
         # file options
         elif opt[2:] in files:
-            processFileOption(opt[2:], val, o)
+            process_file_option(opt[2:], val, o)
 
         # misc flags
         elif opt == "--verbose":
@@ -789,57 +790,57 @@ if __name__ == "__main__":
 
     # output files will have this date in their names
     date = time.strftime("%Y-%m-%d-%H%M%S", time.gmtime(time.time()))
-    out = Path(o['outputDir'], o['langCode'], o['project'], date)
+    out = Path(o['output_dir'], o['lang_code'], o['project'], date)
 
     # processing begins
-    if o['retrieveTitles']:
+    if o['retrieve_titles']:
         if not o['wcr']:
-            usage("in retrieveTitles: Missing mandatory option wcr.")
+            usage("in retrieve_titles: Missing mandatory option wcr.")
         if not o['template']:
-            usage("in retrieveTitles: Missing mandatory option template.")
+            usage("in retrieve_titles: Missing mandatory option template.")
         if ':' not in o['template']:
-            usage("in retrieveTitles: template option should start with 'Template:' " +
+            usage("in retrieve_titles: template option should start with 'Template:' " +
                   "or the equivalent in the wiki's language")
-        if not o['mwVersion']:
-            usage("in retrieveTitles: Missing mandatory option mwversion.")
+        if not o['mw_version']:
+            usage("in retrieve_titles: Missing mandatory option mwversion.")
 
         if (verbose):
             sys.stderr.write("Retrieving page titles from wiki\n")
 
-        r = Retriever(o['wcr'], o['outputDir'], o['langCode'], o['project'], verbose)
-        if not o['titlesPath']:
+        r = Retriever(o['wcr'], o['output_dir'], o['lang_code'], o['project'], verbose)
+        if not o['titles_path']:
             # get titles corresponding to the template
-            o['titlesPath'] = r.getTitlesEmbeddedIn(o['template'], out.makeFile("main-titles.gz"))
+            o['titles_path'] = r.get_titles_embedded_in(o['template'], out.make_file("main-titles.gz"))
             if verbose:
-                sys.stderr.write("main content titles file produced: <%s>\n" % o['titlesPath'])
+                sys.stderr.write("main content titles file produced: <%s>\n" % o['titles_path'])
 
-        if not o['mediawikiTitlesPath']:
+        if not o['mediawiki_titles_path']:
             # get the mediawiki page titles
-            o['mediawikiTitlesPath'] = r.getTitlesInNamespace("8", out.makeFile("mw-titles.gz"))
+            o['mediawiki_titles_path'] = r.get_titles_in_namespace("8", out.make_file("mw-titles.gz"))
             if verbose:
-                sys.stderr.write("mediawiki titles file produced: <%s>\n" % o['mediawikiTitlesPath'])
+                sys.stderr.write("mediawiki titles file produced: <%s>\n" % o['mediawiki_titles_path'])
 
-        if not o['moduleTitlesPath']:
+        if not o['module_titles_path']:
             # get the module (lua) page titles
-            o['moduleTitlesPath'] = r.getTitlesInNamespace("828", out.makeFile("mod-titles.gz"))
+            o['module_titles_path'] = r.get_titles_in_namespace("828", out.make_file("mod-titles.gz"))
             if verbose:
-                sys.stderr.write("modules (lua) titles file produced: <%s>\n" % o['moduleTitlesPath'])
+                sys.stderr.write("modules (lua) titles file produced: <%s>\n" % o['module_titles_path'])
 
-        if not o['templateTitlesPath']:
+        if not o['template_titles_path']:
             # get the template page titles
-            o['templateTitlesPath'] = r.getTitlesInNamespace("10", out.makeFile("tmpl-titles.gz"))
+            o['template_titles_path'] = r.get_titles_in_namespace("10", out.make_file("tmpl-titles.gz"))
             if verbose:
-                sys.stderr.write("templates titles file produced: <%s>\n" % o['templateTitlesPath'])
+                sys.stderr.write("templates titles file produced: <%s>\n" % o['template_titles_path'])
 
         if (verbose):
             sys.stderr.write("Done retrieving page titles from wiki, have " +
                              "%s, %s, %s and %s\n" % (
-                                 o['titlesPath'], o['mediawikiTitlesPath'],
-                                 o['moduleTitlesPath'], o['templateTitlesPath']))
+                                 o['titles_path'], o['mediawiki_titles_path'],
+                                 o['module_titles_path'], o['template_titles_path']))
 
-    if o['convertTitles']:
-        if (not o['titlesPath'] or not o['mediawikiTitlesPath'] or not o['moduleTitlesPath'] or
-                not o['templateTitlesPath']):
+    if o['convert_titles']:
+        if (not o['titles_path'] or not o['mediawiki_titles_path'] or not o['module_titles_path'] or
+                not o['template_titles_path']):
             usage("Missing mandatory option for skipping previous step.", True)
         if not o['wcr']:
             usage("Missing mandatory option wcr.")
@@ -847,14 +848,14 @@ if __name__ == "__main__":
         if (verbose):
             sys.stderr.write("Converting retrieved titles \n")
 
-        r = Retriever(o['wcr'], o['outputDir'], o['langCode'], o['project'], verbose)
+        r = Retriever(o['wcr'], o['output_dir'], o['lang_code'], o['project'], verbose)
 
         # get namespaces from the api
-        nsDict = r.getNsDict()
+        ns_dict = r.get_ns_dict()
 
-        nsDictByString = {}
-        for nsnum in nsDict.keys():
-            nsDictByString[nsDict[nsnum]] = nsnum
+        ns_dict_by_string = {}
+        for nsnum in ns_dict.keys():
+            ns_dict_by_string[ns_dict[nsnum]] = nsnum
 
         if verbose:
             sys.stderr.write("namespace dicts assembled\n")
@@ -863,135 +864,140 @@ if __name__ == "__main__":
         # (for use for download) - without dups
         # also create a hash with title, list of ns for this title (it will have
         # at least one entry in the list)
-        t = Titles(nsDict, nsDictByString)
+        t = Titles(ns_dict, ns_dict_by_string)
 
         # check main, file, category, project talk namespaces and convert to
         # main, file, category, project talk namespaces
-        t.addRelatedTitlesFromFile(o['titlesPath'], ["1", "5", "7", "15"], ["0", "4", "6", "14"])
+        t.add_related_titles_from_file(o['titles_path'], ["1", "5", "7", "15"], ["0", "4", "6", "14"])
 
         if verbose:
             sys.stderr.write("page title hash assembled\n")
 
-        t.addTitlesFromFile(o['mediawikiTitlesPath'], "8")
+        t.add_titles_from_file(o['mediawiki_titles_path'], "8")
         if verbose:
             sys.stderr.write("mediawiki titles added to page title hash\n")
 
-        t.addTitlesFromFile(o['moduleTitlesPath'], "828")
+        t.add_titles_from_file(o['module_titles_path'], "828")
         if verbose:
             sys.stderr.write("module titles added to page title hash\n")
 
-        t.addTitlesFromFile(o['templateTitlesPath'], "10")
+        t.add_titles_from_file(o['template_titles_path'], "10")
         if verbose:
             sys.stderr.write("template titles added to page title hash\n")
 
         t.uniq()
 
-        o['mainTitlesWithPrefixPath'] = out.makePath("main-titles-with-nsprefix.gz")
-        outFd = File.openOutput(o['mainTitlesWithPrefixPath'])
+        o['main_titles_with_prefix_path'] = out.make_path("main-titles-with-nsprefix.gz")
+        out_fd = File.open_output(o['main_titles_with_prefix_path'])
         for line in t.list:
-            outFd.write(line + "\n")
-        outFd.close()
+            out_fd.write(line + "\n")
+        out_fd.close()
 
-        o['tmplTitlesWithPrefixPath'] = out.makePath("tmpl-titles-with-nsprefix.gz")
-        outFd = File.openOutput(o['tmplTitlesWithPrefixPath'])
-        for line in t.listTemplates:
-            outFd.write(line + "\n")
-        outFd.close()
+        o['tmpl_titles_with_prefix_path'] = out.make_path("tmpl-titles-with-nsprefix.gz")
+        out_fd = File.open_output(o['tmpl_titles_with_prefix_path'])
+        for line in t.list_templates:
+            out_fd.write(line + "\n")
+        out_fd.close()
 
         if (verbose):
             sys.stderr.write("Done converting retrieved titles, have %s and %s\n"
-                             % (o['mainTitlesWithPrefixPath'], o['tmplTitlesWithPrefixPath']))
+                             % (o['main_titles_with_prefix_path'], o['tmpl_titles_with_prefix_path']))
 
-    if o['retrieveContent']:
-        if not o['mainTitlesWithPrefixPath'] or not o['tmplTitlesWithPrefixPath']:
-            usage("in RetrieveContent: Missing mandatory option for skipping previous step.", True)
+    if o['retrieve_content']:
+        if not o['main_titles_with_prefix_path'] or not o['tmpl_titles_with_prefix_path']:
+            usage("in retrieve_content: Missing mandatory option for skipping previous step.", True)
 
         if (verbose):
             sys.stderr.write("Retrieving page content from wiki\n")
 
-        if not o['templateContentPath']:
-            # filter out the template titles from the mainTitlesWithPrefixPath file
+        if not o['template_content_path']:
+            # filter out the template titles from the main_titles_with_prefix_path file
             # and just download the rest
-            o['templateContentPath'] = r.getContent(o['tmplTitlesWithPrefixPath'],
-                                                    out.makeFile("template-content.gz"))
+            o['template_content_path'] = r.get_content(o['tmpl_titles_with_prefix_path'],
+                                                       out.make_file("template-content.gz"))
             if verbose:
                 sys.stderr.write("content retrieved from template page titles\n")
 
-        if not o['mainContentPath']:
-            o['mainContentPath'] = r.getContent(o['mainTitlesWithPrefixPath'],
-                                                out.makeFile("rest-content.gz"))
+        if not o['main_content_path']:
+            o['main_content_path'] = r.get_content(o['main_titles_with_prefix_path'],
+                                                   out.make_file("rest-content.gz"))
             if verbose:
                 sys.stderr.write("content retrieved from page titles\n")
 
-        o['contentPath'] = out.makePath("content.gz")
-        File.combineXML([o['templateContentPath'], o['mainContentPath']], o['contentPath'])
+        o['content_path'] = out.make_path("content.gz")
+        File.combine_xml([o['template_content_path'], o['main_content_path']], o['content_path'])
 
         if (verbose):
             sys.stderr.write("Done retrieving page content from wiki, have %s, %s and %s\n"
-                             % (o['templateContentPath'], o['mainContentPath'], o['contentPath']))
+                             % (o['template_content_path'], o['main_content_path'], o['content_path']))
 
-    if o['makeStubs']:
-        if not o['contentPath']:
-            usage("in MakeStubs: Missing mandatory option for skipping previous step.", True)
+    if o['make_stubs']:
+        if not o['content_path']:
+            usage("in make_stubs: Missing mandatory option for skipping previous step.", True)
 
         if (verbose):
             sys.stderr.write("Generating stub XML file and pageids file from downloaded content\n")
-        s = Stubber(o['outputDir'], verbose)
+        s = Stubber(o['output_dir'], verbose)
         # generate stub XML file for converting sql and list of page ids for filtering sql
-        o['stubsPath'] = out.makePath("stubs.gz")
-        o['pageIdsPath'] = out.makePath("pageids.gz")
-        s.writeStubAndPageIds(o['contentPath'], o['stubsPath'], o['pageIdsPath'])
+        o['stubs_path'] = out.make_path("stubs.gz")
+        o['page_ids_path'] = out.make_path("pageids.gz")
+        s.write_stub_and_page_ids(o['content_path'], o['stubs_path'], o['page_ids_path'])
         if (verbose):
             sys.stderr.write("Done generating stub XML file and pageids file from " +
-                             "downloaded content, have %s and %s\n" % (o['stubsPath'], o['pageIdsPath']))
+                             "downloaded content, have %s and %s\n" % (
+                                 o['stubs_path'], o['page_ids_path']))
 
-    if o['convertXML']:
-        if not o['contentPath']:
-            usage("in ConvertXML: Missing mandatory option for skipping previous step.", True)
+    if o['convert_xml']:
+        if not o['content_path']:
+            usage("in convert_xml: Missing mandatory option for skipping previous step.", True)
         if not o['mwxml2sql']:
-            usage("in ConvertXML: Missing mandatory option mwxml2sql.")
+            usage("in convert_xml: Missing mandatory option mwxml2sql.")
 
         if (verbose):
             sys.stderr.write("Converting content to page, revision, text tables\n")
-        c = Converter(o['mwxml2sql'], o['outputDir'], verbose)
+        c = Converter(o['mwxml2sql'], o['output_dir'], verbose)
         # convert the content file to page, revision and text tables
-        c.convertContent(o['contentPath'], o['stubsPath'], o['mwVersion'])
+        c.convert_content(o['content_path'], o['stubs_path'], o['mw_version'])
         if verbose:
             sys.stderr.write("Done converting content to page, revision, text tables\n")
 
-    if o['filterSql']:
-        if not o['pageIdsPath']:
-            usage("in FilterSql: Missing mandatory option for skipping previous step.", True)
-        if not o['sqlFiles']:
-            usage("in FilterSql: Missing mandatory option sqlfiles.")
+    if o['filter_sql']:
+        if not o['page_ids_path']:
+            usage("in filter_sql: Missing mandatory option for skipping previous step.", True)
+        if not o['sql_files']:
+            usage("in filter_sql: Missing mandatory option sqlfiles.")
         if not o['sqlfilter']:
-            usage("in FilterSql: Missing mandatory option sqlfilter.")
+            usage("in filter_sql: Missing mandatory option sqlfilter.")
 
         if verbose:
             sys.stderr.write("Filtering sql tables against page ids for import\n")
 
-        f = Filter(o['sqlfilter'], o['outputDir'], verbose)
+        f = Filter(o['sqlfilter'], o['output_dir'], verbose)
         # filter all the sql tables (which should be in some nice directory)
-        # against the pageids in pageidsPath file
+        # against the pageids in page_ids_path file
         for table in ["categorylinks", "externallinks", "imagelinks", "interwiki",
                       "iwlinks", "langlinks", "page_props", "page_restrictions",
                       "pagelinks", "protected_titles", "redirect", "templatelinks"]:
-            sqlFileName = o['sqlFiles'].format(t=table)
-            filteredFileName = os.path.basename(sqlFileName)
-            f.filter(sqlFileName,
-                     filteredFileName,
-                     o['pageIdsPath'])
+            sql_filename = o['sql_files'].format(t=table)
+            filtered_filename = os.path.basename(sql_filename)
+            f.filter(sql_filename,
+                     filtered_filename,
+                     o['page_ids_path'])
         if (verbose):
             sys.stderr.write("Done filtering sql tables against page ids for import\n")
 
         # the one file we can't filter, it's not by pageid as categories might not have pages
         # so we'll have to import it wholesale... (or you can ignore them completely)
-        sqlFileName = o['sqlFiles'].format(t='category')
-        newFileName = os.path.join(o['outputDir'], os.path.basename(sqlFileName))
+        sql_filename = o['sql_files'].format(t='category')
+        new_filename = os.path.join(o['output_dir'], os.path.basename(sql_filename))
         if verbose:
-            sys.stderr.write("about to copy %s to %s\n" % (sqlFileName, newFileName))
-        shutil.copyfile(sqlFileName, newFileName)
+            sys.stderr.write("about to copy %s to %s\n" % (sql_filename, new_filename))
+        shutil.copyfile(sql_filename, new_filename)
 
     if (verbose):
         sys.stderr.write("Done!\n")
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    do_main()

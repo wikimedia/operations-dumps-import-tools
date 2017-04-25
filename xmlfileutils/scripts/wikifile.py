@@ -7,7 +7,7 @@ class File(object):
     """open bz2, gz and uncompressed files"""
 
     @staticmethod
-    def openInput(filename):
+    def open_input(filename):
         """Open for input a file optionally gz or bz2 compressed,
         determined by existence of .gz or .bz2 suffix"""
 
@@ -18,7 +18,7 @@ class File(object):
         return fd
 
     @staticmethod
-    def openOutput(filename):
+    def open_output(filename):
         """Open for output a file optionally gz or bz2 compressed,
         determined by existence of .gz or .bz2 suffix"""
 
@@ -29,37 +29,37 @@ class File(object):
         return fd
 
     @staticmethod
-    def combineXML(pathList, outputPath):
+    def combine_xml(path_list, output_path):
         """Combine multiple content or stub xml files into one,
         skipping extra headers (siteinfo etc) and footers
         There is a small risk here tht the site info is
         actually different between the files, if we were really
         paranoid we would check that
         Arguments:
-        pathList   -- list of full paths to xml content or stub files
-        outputPath -- full path to combined output file"""
+        path_list   -- list of full paths to xml content or stub files
+        output_path -- full path to combined output file"""
 
-        endHeaderPattern = "^\s*</siteinfo>"
-        compiledEndHeaderPattern = re.compile(endHeaderPattern)
-        endMediaWikiPattern = "^\s*</mediawiki>"
-        compiledEndMediaWikiPattern = re.compile(endMediaWikiPattern)
+        end_header_pattern = "^\s*</siteinfo>"
+        compiled_end_header_pattern = re.compile(end_header_pattern)
+        end_mediawiki_pattern = "^\s*</mediawiki>"
+        compiled_end_mediawiki_pattern = re.compile(end_mediawiki_pattern)
 
-        outFd = File.openOutput(outputPath)
+        out_fd = File.open_output(output_path)
         i = 0
-        listLen = len(pathList)
-        for f in pathList:
-            inHeader = True
-            inFd = File.openInput(f)
-            for line in inFd:
-                if (i + 1 < listLen):  # skip footer of all files but last one
-                    if compiledEndMediaWikiPattern.match(line):
+        list_len = len(path_list)
+        for f in path_list:
+            in_header = True
+            in_fd = File.open_input(f)
+            for line in in_fd:
+                if (i + 1 < list_len):  # skip footer of all files but last one
+                    if compiled_end_mediawiki_pattern.match(line):
                         continue
-                if i and inHeader:  # skip header of all files but first one
-                    if compiledEndHeaderPattern.match(line):
-                        inHeader = False
+                if i and in_header:  # skip header of all files but first one
+                    if compiled_end_header_pattern.match(line):
+                        in_header = False
                 else:
-                    outFd.write(line)
-            inFd.close()
+                    out_fd.write(line)
+            in_fd.close()
             i = i + 1
 
-        outFd.close()
+        out_fd.close()
