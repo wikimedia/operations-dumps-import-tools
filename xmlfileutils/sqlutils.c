@@ -57,18 +57,18 @@ void copy_sql_field(char *outbuf, char *field, int isstring, int islast) {
   if (isstring) {
     if (field) {
       if (!islast) {
-	sprintf(outbuf,"'%s', ",field);
+        sprintf(outbuf,"'%s', ",field);
       }
       else {
-	sprintf(outbuf,"'%s'",field);
+        sprintf(outbuf,"'%s'",field);
       }
     }
     else {
       if (!islast) {
-	strcpy(outbuf,"NULL, ");
+        strcpy(outbuf,"NULL, ");
       }
       else {
-	strcpy(outbuf,"NULL");
+        strcpy(outbuf,"NULL");
       }
     }
   }
@@ -119,44 +119,44 @@ char *un_xml_escape(char *value, char*output, int last) {
     if (scan_ind[0] == '&') {
       scan_ind++;
       if (!strncmp(scan_ind, "lt;", 3)) {
-	copy_ind[0] = '<';
-	copy_ind++;
-	scan_ind += 3;
+        copy_ind[0] = '<';
+        copy_ind++;
+        scan_ind += 3;
       }
       else if (!strncmp(scan_ind, "gt;", 3)) {
-	copy_ind[0] = '>';
-	copy_ind++;
-	scan_ind += 3;
+        copy_ind[0] = '>';
+        copy_ind++;
+        scan_ind += 3;
       }
       else if (!strncmp(scan_ind, "quot;", 5)) {
-	copy_ind[0] = '"';
-	copy_ind++;
-	scan_ind += 5;
+        copy_ind[0] = '"';
+        copy_ind++;
+        scan_ind += 5;
       }
       else if (!strncmp(scan_ind, "amp;", 4)) {
-	copy_ind[0] = '&';
-	copy_ind++;
-	scan_ind += 4;
+        copy_ind[0] = '&';
+        copy_ind++;
+        scan_ind += 4;
       }
       else if (!strncmp(scan_ind, "#039;", 5)) {
-	copy_ind[0] = '\'';
-	copy_ind++;
-	scan_ind += 5;
+        copy_ind[0] = '\'';
+        copy_ind++;
+        scan_ind += 5;
       }
       else {
-	/* if we're near the end of the string  and supposed to keep
-	 the last few chrs, do so */
-	if (!last && strlen(value) - (scan_ind - value) < 5) {
-	  copy_ind[0] = '\0';
-	  return scan_ind-1;
-	}
-	else {
-	  copy_ind[0] = '&';
-	  copy_ind++;
-	  copy_ind[0] = scan_ind[0];
-	  copy_ind++;
-	  scan_ind++;
-	}
+        /* if we're near the end of the string  and supposed to keep
+          the last few chrs, do so */
+        if (!last && strlen(value) - (scan_ind - value) < 5) {
+          copy_ind[0] = '\0';
+          return scan_ind-1;
+        }
+        else {
+          copy_ind[0] = '&';
+          copy_ind++;
+          copy_ind[0] = scan_ind[0];
+          copy_ind++;
+          scan_ind++;
+        }
       }
     }
     else {
@@ -358,9 +358,9 @@ void namespace_strip(char *t, siteinfo_t *s) {
     if (!strcmp(t, ns->namespace)) {
       rest = colon+1;
       while (*rest) {
-	*t = *rest;
-	t++;
-	rest++;
+        *t = *rest;
+        t++;
+        rest++;
       }
       *t = '\0';
       return;
@@ -429,12 +429,12 @@ void write_metadata(output_file_t *f, char *schema, siteinfo_t *s) {
       strcpy(out_buf,"--\n");
       put_line(f, out_buf);
       if (s->namespaces) {
-	n = s->namespaces;
-	while (n) {
-	  snprintf(out_buf, sizeof(out_buf), "-- Namespace %s: %s\n", n->key, n->namespace);
-	  put_line(f, out_buf);
-	  n = n->next;
-	}
+        n = s->namespaces;
+        while (n) {
+          snprintf(out_buf, sizeof(out_buf), "-- Namespace %s: %s\n", n->key, n->namespace);
+          put_line(f, out_buf);
+          n = n->next;
+        }
       }
     }
     f = f->next;
@@ -698,8 +698,8 @@ void write_createtables_file(output_file_t *f, int nodrop, int table_compress, t
   args:
     prefix    string used as prefix for all MediaWiki table names
               (folks often set up local mw installations where all
-	      the tables have some prefix like mw_ or what have you
-	      instead of just the regular names)
+              the tables have some prefix like mw_ or what have you
+              instead of just the regular names)
 
   returns:
     filled in structure containing names for page, revision and

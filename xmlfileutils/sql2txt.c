@@ -102,8 +102,8 @@ char *do_field(input_file_t *sql, output_file_t *text, char *start, int verbose)
       write_field(text, load_data_escaped_buf, load_data_escaped_buf + strlen(load_data_escaped_buf), first_write&&quoted, 0, verbose);
       first_write = 0;
       if (!get_line(sql)) {
-	show_error("abrupt end to data after or in field %s\n", start);
-	return(NULL);
+        show_error("abrupt end to data after or in field %s\n", start);
+        return(NULL);
       }
       start = sql->in_buf->content;
       ind = start;
@@ -111,21 +111,21 @@ char *do_field(input_file_t *sql, output_file_t *text, char *start, int verbose)
     else {
       /* move ind along, skipping over escaped crap etc. */
       if (*ind == '\\') {
-	ind++;
-	if (!*ind) {
-	  sql->leftover[0] = '\\';
-	  sql->leftover[1] = '\0';
-	  load_data_escape(start, ind-start-1, load_data_escaped_buf, sizeof(load_data_escaped_buf), donulls);
-	  write_field(text, load_data_escaped_buf, load_data_escaped_buf + strlen(load_data_escaped_buf), first_write&&quoted, 0, verbose);
-	  first_write = 0;
-	  if (!get_line(sql)) {
-	    show_error("abrupt end to data after backslash in field %s\n", start);
-	    return(NULL);
-	  }
-	  start = sql->in_buf->content;
-	  ind = start;
-	}
-	else ind++;
+        ind++;
+        if (!*ind) {
+          sql->leftover[0] = '\\';
+          sql->leftover[1] = '\0';
+          load_data_escape(start, ind-start-1, load_data_escaped_buf, sizeof(load_data_escaped_buf), donulls);
+          write_field(text, load_data_escaped_buf, load_data_escaped_buf + strlen(load_data_escaped_buf), first_write&&quoted, 0, verbose);
+          first_write = 0;
+          if (!get_line(sql)) {
+            show_error("abrupt end to data after backslash in field %s\n", start);
+            return(NULL);
+          }
+          start = sql->in_buf->content;
+          ind = start;
+        }
+        else ind++;
       }
       else ind++;
     }
@@ -195,8 +195,8 @@ char *do_tuple(input_file_t *sql, output_file_t *text, char *start, int verbose)
     else if (*start == ',') {
       start++;
       if (!*start) { /* try to refill the buffer */
-	if (get_line(sql) == NULL) return(NULL);
-	start = sql->in_buf->content;
+        if (get_line(sql) == NULL) return(NULL);
+        start = sql->in_buf->content;
       }
     }
     else {

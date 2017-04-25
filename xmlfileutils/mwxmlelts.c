@@ -210,8 +210,8 @@ int find_rev_with_id(input_file_t *f, char *id) {
   while (!match) {
     while (get_start_tag(f, REVISION) == -1) {
       if (get_line(f) == NULL) {
-	whine("no revision tag in file for id %s", id);
-	return(-1);
+        whine("no revision tag in file for id %s", id);
+        return(-1);
       }
     }
     if (get_line(f) == NULL) {
@@ -220,7 +220,7 @@ int find_rev_with_id(input_file_t *f, char *id) {
     }
     if (get_elt_with_attrs(f, ID, found_id, sizeof(found_id), NULL, 0) == -1) {
       whine("no id for revision in file for id %s", id);
-	return(-1);
+        return(-1);
     }
     if (!strcmp(id, found_id)) return(0);
 
@@ -421,40 +421,40 @@ int do_text(input_file_t *f,  output_file_t *sqlt, revision_t *r, int verbose, t
       if (get_text_length) text_length+= strlen(raw);
       if (get_sha1) sha1_update(&ctx, (unsigned char *)raw, strlen(raw));
       if (text_compress) {
-	/* FIXME do something with this return value */
-	compressed_ptr = gzipit(raw, &compressed_length, compressed_buf, sizeof(compressed_buf));
-	/* this can be null terminated cause nulls get escaped, yay */
-	text_field_len += compressed_length;
-	todo = compressed_content;
-	todo_length = compressed_length;
-	while (1) {
-	  todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
-	  put_line_all(sqlt, esc_buf);
-	  if (!todo_new) break;
-	  todo_length = todo_length - (todo_new - todo);
-	  todo = todo_new;
-	}
+        /* FIXME do something with this return value */
+        compressed_ptr = gzipit(raw, &compressed_length, compressed_buf, sizeof(compressed_buf));
+        /* this can be null terminated cause nulls get escaped, yay */
+        text_field_len += compressed_length;
+        todo = compressed_content;
+        todo_length = compressed_length;
+        while (1) {
+          todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
+          put_line_all(sqlt, esc_buf);
+          if (!todo_new) break;
+          todo_length = todo_length - (todo_new - todo);
+          todo = todo_new;
+        }
       }
       else {
-	text_field_len += strlen(raw);
-	todo = raw;
-	todo_length = strlen(raw);
-	while (1) {
-	  todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
-	  put_line_all(sqlt, esc_buf);
-	  if (!todo_new) break;
-	  todo_length = todo_length - (todo_new - todo);
-	  todo = todo_new;
-	}
+        text_field_len += strlen(raw);
+        todo = raw;
+        todo_length = strlen(raw);
+        while (1) {
+          todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
+          put_line_all(sqlt, esc_buf);
+          if (!todo_new) break;
+          todo_length = todo_length - (todo_new - todo);
+          todo = todo_new;
+        }
       }
       if (leftover) {
-	/* keep the bytes at the end, maybe they are
-	   the first part of an escaped character */
-	strcpy(f->leftover, leftover);
+        /* keep the bytes at the end, maybe they are
+           the first part of an escaped character */
+        strcpy(f->leftover, leftover);
       }
       /* this can mean we don't process the last few chrs of the
-	 file in case the xml output is terminated in the middle,
-	 that's not a disaster */
+         file in case the xml output is terminated in the middle,
+         that's not a disaster */
       if (get_line(f) == NULL) break;
       ind = f->in_buf->content;
     }
@@ -465,31 +465,31 @@ int do_text(input_file_t *f,  output_file_t *sqlt, revision_t *r, int verbose, t
       if (get_text_length) text_length+= strlen(raw);
       if (get_sha1) sha1_update(&ctx, (unsigned char *)raw, strlen(raw));
       if (text_compress) {
-	/* FIXME do something with this return value */
-	compressed_ptr = gzipit(raw, &compressed_length, compressed_buf, sizeof(compressed_buf));
-	text_field_len += compressed_length;
-	text_field_len += compressed_length;
-	todo = compressed_content;
-	todo_length = compressed_length;
-	while (1) {
-	  todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
-	  put_line_all(sqlt, esc_buf);
-	  if (!todo_new) break;
-	  todo_length = todo_length - (todo_new - todo);
-	  todo = todo_new;
-	}
+        /* FIXME do something with this return value */
+        compressed_ptr = gzipit(raw, &compressed_length, compressed_buf, sizeof(compressed_buf));
+        text_field_len += compressed_length;
+        text_field_len += compressed_length;
+        todo = compressed_content;
+        todo_length = compressed_length;
+        while (1) {
+          todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
+          put_line_all(sqlt, esc_buf);
+          if (!todo_new) break;
+          todo_length = todo_length - (todo_new - todo);
+          todo = todo_new;
+        }
       }
       else {
-	text_field_len += strlen(raw);
-	todo = raw;
-	todo_length = strlen(raw);
-	while (1) {
-	  todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
-	  put_line_all(sqlt, esc_buf);
-	  if (!todo_new) break;
-	  todo_length = todo_length - (todo_new - todo);
-	  todo = todo_new;
-	}
+        text_field_len += strlen(raw);
+        todo = raw;
+        todo_length = strlen(raw);
+        while (1) {
+          todo_new = sql_escape(todo, todo_length, esc_buf, sizeof(esc_buf));
+          put_line_all(sqlt, esc_buf);
+          if (!todo_new) break;
+          todo_length = todo_length - (todo_new - todo);
+          todo = todo_new;
+        }
       }
       *endtag = '<';
       result = 1;
@@ -723,15 +723,15 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
     else if (! result) break;
     if (!strcmp(name, "id"))
       if (insert_ignore)
-	/* separate revisions can have the same text id if only the metadata was changed,
-	   e.g. the page was protected.  use the original text ids therefore only
-	   if we are going to write INSERT IGNORE to ignore dup entries */
-	strcpy(r.text_id, value);
+        /* separate revisions can have the same text id if only the metadata was changed,
+           e.g. the page was protected.  use the original text ids therefore only
+           if we are going to write INSERT IGNORE to ignore dup entries */
+        strcpy(r.text_id, value);
       else
-	/* fallback since the rev id is guaranteed to be unique, is use this as the text
-	   id, this means the resulting db won't be quite identical to the one from
-	   which data was dumped */
-	strcpy(r.text_id, r.id);
+        /* fallback since the rev id is guaranteed to be unique, is use this as the text
+           id, this means the resulting db won't be quite identical to the one from
+           which data was dumped */
+        strcpy(r.text_id, r.id);
     else if (!strcmp(name, "bytes"))
       strcpy(r.text_len, value);
     else if (!strcmp(name, "deleted")) {
@@ -756,8 +756,8 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
   if (! r.sha1[0]) {
     if (get_elt_with_attrs(stubs, SHA1, r.sha1, sizeof(r.sha1), NULL, 0) != -1) {
       if (get_line(stubs) == NULL) {
-	whine("abrupt end of revision data in rev id %s", r.id);
-	return(0);
+        whine("abrupt end of revision data in rev id %s", r.id);
+        return(0);
       }
     }
   }
@@ -766,16 +766,16 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
   if (! r.model[0]) {
     if (get_elt_with_attrs(stubs, MODEL, r.model, sizeof(r.model), NULL, 0) != -1) {
       if (get_line(stubs) == NULL) {
-	whine("abrupt end of revision data in rev id %s", r.id);
-	return(0);
+        whine("abrupt end of revision data in rev id %s", r.id);
+        return(0);
       }
     }
   }
   if (! r.format[0]) {
     if (get_elt_with_attrs(stubs, FORMAT, r.format, sizeof(r.format), NULL, 0) != -1) {
       if (get_line(stubs) == NULL) {
-	whine("abrupt end of revision data in rev id %s", r.id);
-	return(0);
+        whine("abrupt end of revision data in rev id %s", r.id);
+        return(0);
       }
     }
   }
@@ -793,13 +793,13 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
   if (text) {
     if (find_rev_with_id(text, r.id) != -1) {
       if (!find_text_in_rev(text)) {
-	/* even if this turns out bad we are committed to adding the revision at this point */
+        /* even if this turns out bad we are committed to adding the revision at this point */
 
-	/* if any version in our list is recent enough that we will write out the field, we need it */
-	if (mwv_any_greater(mwv,1,18) && !r.sha1[0]) get_sha1 = 1;
-	if (mwv_any_greater(mwv,1,8) && !r.text_len[0]) get_text_len = 1;
+        /* if any version in our list is recent enough that we will write out the field, we need it */
+        if (mwv_any_greater(mwv,1,18) && !r.sha1[0]) get_sha1 = 1;
+        if (mwv_any_greater(mwv,1,8) && !r.text_len[0]) get_text_len = 1;
 
-	do_text(text, sqlt, &r, verbose, t, insert_ignore, get_sha1, get_text_len, text_compress);
+        do_text(text, sqlt, &r, verbose, t, insert_ignore, get_sha1, get_text_len, text_compress);
       }
     }
   }
@@ -835,7 +835,7 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
     snprintf(out_buf, sizeof(out_buf), "INSERT %s INTO %s \
 (rev_id, rev_page, rev_text_id, rev_comment, rev_user, \
 rev_user_text, rev_timestamp, rev_minor_edit, rev_deleted", \
-	     insert_ignore?"IGNORE":"", t->revs);
+             insert_ignore?"IGNORE":"", t->revs);
     put_line_all(sqlr, out_buf);
     if (verbose > 2) fprintf(stderr,"(%s) %s",t->revs, out_buf);
 
@@ -860,11 +860,11 @@ rev_user_text, rev_timestamp, rev_minor_edit, rev_deleted", \
   /* text: rev_comment rev_user_text rev_timestamp rev_sha1 rev_content_model rev_content_format */
   /* possible null: rev_content_model rev_content_format */
 
-  snprintf(out_buf, sizeof(out_buf),		   \
-      "(%s, %s, %s, '%s', %s, '%s', '%s', %s, %s", \
-	   r.id, p->id, r.text_id, escaped_comment, c.id[0]?c.id:"0",	\
-	   c.ip[0]?c.ip:escaped_user, \
-	   r.timestamp, r.minor, "0");
+  snprintf(out_buf, sizeof(out_buf),                              \
+      "(%s, %s, %s, '%s', %s, '%s', '%s', %s, %s",                \
+      r.id, p->id, r.text_id, escaped_comment, c.id[0]?c.id:"0",  \
+      c.ip[0]?c.ip:escaped_user,                                  \
+      r.timestamp, r.minor, "0");
   put_line_all(sqlr, out_buf);
   if (verbose > 2) fprintf(stderr,"(%s) %s",t->revs, out_buf);
 
@@ -935,8 +935,8 @@ int find_page_with_id(input_file_t *f, char *id) {
   while (!match) {
     while (get_start_tag(f, PAGE) == -1) {
       if (get_line(f) == NULL) {
-	whine("no page tag in file");
-	return(-1);
+        whine("no page tag in file");
+        return(-1);
       }
     }
     if (get_line(f) == NULL) {
@@ -945,19 +945,19 @@ int find_page_with_id(input_file_t *f, char *id) {
     }
     if (get_elt_with_attrs(f, TITLE, NULL, 0, NULL, 0) != -1) {
       if (get_line(f) == NULL) {
-	whine("no id for page in file");
-	return(-1);
+        whine("no id for page in file");
+        return(-1);
       }
     }
     if (get_elt_with_attrs(f, NS, NULL, 0, NULL, 0) != -1) {
       if (get_line(f) == NULL) {
-	whine("no id for page in file");
-	return(-1);
+        whine("no id for page in file");
+        return(-1);
       }
     }
     if (get_elt_with_attrs(f, ID, found_id, sizeof(found_id), NULL, 0) == -1) {
-	whine("no id for page in file");
-	return(-1);
+        whine("no id for page in file");
+        return(-1);
     }
     if (!strcmp(id, found_id)) return(0);
 
@@ -1057,28 +1057,28 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
     /* end of this array is marked by -1 */
     while (ns_to_skip[i] >= 0) {
       if (atoi(p.ns) == ns_to_skip[i]) {
-	skip = 1;
-	break;
+        skip = 1;
+        break;
       }
       i++;
     }
     if (skip) {
       if (verbose > 1) fprintf(stderr,"skipping page %s by user request\n", p.id);
       while (1) {
-	if (get_end_tag(stubs, PAGE) == -1) {
-	  if (get_line(stubs) == NULL) {
-	    whine("abrupt end of page data");
-	    return(0);
-	  }
-	}
-	else break;
+        if (get_end_tag(stubs, PAGE) == -1) {
+          if (get_line(stubs) == NULL) {
+            whine("abrupt end of page data");
+            return(0);
+          }
+        }
+        else break;
       }
 
       if (want_text) {
-	/* also skip forward in the text file */
-	if (find_page_with_id(text, p.id) == -1) {
-	  return(0);
-	}
+        /* also skip forward in the text file */
+        if (find_page_with_id(text, p.id) == -1) {
+          return(0);
+        }
       }
       return(1);
     }
@@ -1116,11 +1116,11 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
   if (p.id) {
     if (text) {
       if (find_page_with_id(text, p.id) != -1) {
-	want_text++;
+        want_text++;
       }
       /* fixme error check */
       else {
-	whine("couldn't find page with the right rev in text file, skipping rev\n");
+        whine("couldn't find page with the right rev in text file, skipping rev\n");
       }
     }
   }
@@ -1174,9 +1174,9 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
 
   /* fixme having a fixed size buffer kinda sucks here */
   /* text: page_title page_restrictions page_touched */
-  snprintf(out_buf, sizeof(out_buf),				\
-	   "(%s, %s, '%s', '%s'",
-	   p.id, p.ns, escaped_title, p.restrictions);
+  snprintf(out_buf, sizeof(out_buf), \
+           "(%s, %s, '%s', '%s'",
+           p.id, p.ns, escaped_title, p.restrictions);
   put_line_all(sqlp, out_buf);
   if (verbose > 2) fprintf(stderr,"(%s) %s",t->page, out_buf);
 
@@ -1184,8 +1184,8 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
   snprintf(out_buf, sizeof(out_buf), ", 0");
   write_if_mwv(sqlp, 0, 0, 1, 25, out_buf, verbose);
 
-  snprintf(out_buf, sizeof(out_buf), ", %s, %s, %.14f, '%s'",	\
-	   p.redirect, "0", drand48(), p.touched);
+  snprintf(out_buf, sizeof(out_buf), ", %s, %s, %.14f, '%s'", \
+           p.redirect, "0", drand48(), p.touched);
   put_line_all(sqlp, out_buf);
   if (verbose > 2) fprintf(stderr,"%s", out_buf);
 

@@ -22,7 +22,7 @@
               will be placed, one base-36 digit per int.  no checks
               are made as to the length being sufficient, this is the
               caller's responsibility, strlen(in)*24/5 +1 (length needed
-	      for base 32) should be enough
+              for base 32) should be enough
 
    returns:
       number of base 36 digits in the result
@@ -47,11 +47,11 @@ int tobase36(unsigned int *in, unsigned int *in_copy, unsigned int *temp, int in
 
     while (in_ind < in_len) {
       if (in_copy[in_ind] < 36) {
-	overflow = in_copy[in_ind++];
-	if (in_len == 1) {
-	  done++;
-	  break;
-	}
+        overflow = in_copy[in_ind++];
+        if (in_len == 1) {
+          done++;
+          break;
+        }
       }
       digits = overflow << 24 | in_copy[in_ind++];
       temp[temp_ind++] = digits / 36;
@@ -147,9 +147,9 @@ char int2char(int i) {
       int_buf_len    length of array of ints
       s              pre-allocated buffer into which the representation
                      of the int array will be placed.  the string is
-		     the null-terminated. no check is made to determine
-		     that the buffer is large enough, that is the caller's
-		     responsibility, int_buf_len + 1 is enough.
+                     the null-terminated. no check is made to determine
+                     that the buffer is large enough, that is the caller's
+                     responsibility, int_buf_len + 1 is enough.
 
    this function converts an array of integers, each element representing
    a base-36 value, into a character string representing the array

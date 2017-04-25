@@ -122,7 +122,7 @@ typedef struct {
 
 typedef struct {
   char *filename; /* expect mem from assignment not from alloc, if caller
-			    does otherwise then caller must arrange to free as well */
+                     does otherwise then caller must arrange to free as well */
   int filetype; /* one of PLAINTEXT, GZCOMPRESSED, BZCOMPRESSED */
   FILE *fd;
   gzFile gzfd;
@@ -134,7 +134,7 @@ typedef struct {
 
 typedef struct output_file_struct {
   char *filename; /* expect mem from assignment not from alloc, if caller
-			    does otherwise then caller must arrange to free as well */
+                     does otherwise then caller must arrange to free as well */
   int filetype; /* one of PLAINTEXT, GZCOMPRESSED, BZCOMPRESSED */
   FILE *fd;
   gzFile gzfd;

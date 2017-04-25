@@ -26,7 +26,7 @@
      holder_size  length of the tag name holder, if the tag name
                   plus a terminating null is longer than this, only
                   holder_size bytes will be copied and the result
-		  will not be null-terminated
+                  will not be null-terminated
 
    stuffs name of tag into holder if found
    this function expects the tag to be on one line, not split across lines,
@@ -82,7 +82,7 @@ int find_first_tag(input_file_t *f, char *holder, int holder_size) {
                   If this argument is null no copy will be made
      holder_size  length of the attribute string holder, if the attribute string
                   plus a terminating null is longer than this, only holder_size
-		  bytes will be copied and the result will not be null-terminated
+                  bytes will be copied and the result will not be null-terminated
 
    this function expects the tag to be on one line, not split across lines,
    the function does not check that there's actual attributes and not some
@@ -135,7 +135,7 @@ int find_attrs(input_file_t *f, int start, char *holder, int holder_size) {
      holder_size  length of the elt value holder, if the value
                   plus a terminating null is longer than this, only
                   holder_size bytes will be copied and the result
-		  will not be null-terminated
+                  will not be null-terminated
 
    this function expects the value to start the line; leading spaces
    will be considered part of the value, and content will be read from
@@ -208,7 +208,7 @@ int find_value(input_file_t *f, int start_ind, char *holder, int holder_size) {
      holder_size  length of the tag name holder, if the tag name
                   plus a terminating null is longer than this, only
                   holder_size bytes will be copied and the result
-		  will not be null-terminated
+                  will not be null-terminated
 
    this function expects the file content buffer to contain an xml
    close tag for an element (</blah>) possibly with leading spaces,
@@ -321,7 +321,7 @@ w09&quot; from rev 527035558)</comment>
      holder_size  length of the value holder, if the element value
                   plus a terminating null is longer than this, only
                   holder_size bytes will be copied and the result
-		  will not be null-terminated
+                  will not be null-terminated
      attrs        preallocated memory into which to copy the
                   (unparsed) string of atributes, if found, otherwise
                   the first byte will be set to '\0'

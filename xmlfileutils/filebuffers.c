@@ -33,8 +33,8 @@ char *get_filebase(char *file_name, int verbose) {
   if (!file_name) return(NULL);
   if ((start = strrchr(file_name, '.')) != NULL) {
     if (!strcmp(start, BZSUFFIX) ||
-	!strcmp(start, GZSUFFIX) ||
-	!strcmp(start, TXTSUFFIX)) {
+        !strcmp(start, GZSUFFIX) ||
+        !strcmp(start, TXTSUFFIX)) {
     }
     copy = (char *)malloc(start - file_name +1);
     if (!copy) {
@@ -73,16 +73,16 @@ char *get_filesuffix(char *file_name, int verbose) {
   if (!file_name) return(NULL);
   if ((start = strrchr(file_name, '.')) != NULL) {
     if (!strcmp(start, BZSUFFIX) ||
-	!strcmp(start, GZSUFFIX) ||
-	!strcmp(start, TXTSUFFIX)) {
+        !strcmp(start, GZSUFFIX) ||
+        !strcmp(start, TXTSUFFIX)) {
       copy = (char *)malloc(file_name+strlen(file_name) - start +1);
       if (!copy) {
-	fprintf(stderr,"failed to get memory for output filename\n");
-	return(NULL);
+        fprintf(stderr,"failed to get memory for output filename\n");
+        return(NULL);
       }
       strcpy(copy, start);
       if (verbose > 1)
-	fprintf(stderr,"passed %s and returning suffix %s\n", file_name, copy);
+        fprintf(stderr,"passed %s and returning suffix %s\n", file_name, copy);
       return(copy);
     }
   }
@@ -636,36 +636,36 @@ output_file_t *init_output_file(char *basename, char *suffix, mw_version_t *mwv)
       outf->filetype = PLAINTEXT;
       outf->fd = fopen (outf->filename, "w");
       if (!outf->fd) {
-	fprintf(stderr,"failed to open file for write");
-	free_output_file(head);
-	return(NULL);
+        fprintf(stderr,"failed to open file for write");
+        free_output_file(head);
+        return(NULL);
       }
     }
     else if (!strcmp(suffix,BZSUFFIX)) {
       outf->filetype = BZCOMPRESSED;
       outf->bz2fd = BZ2_bzopen(outf->filename, "w");
       if (!outf->bz2fd) {
-	fprintf(stderr,"failed to open bz2 file for write");
-	free_output_file(head);
-	return(NULL);
+        fprintf(stderr,"failed to open bz2 file for write");
+        free_output_file(head);
+        return(NULL);
       }
     }
     else if (!strcmp(suffix, GZSUFFIX)) {
       outf->filetype = GZCOMPRESSED;
       outf->gzfd = gzopen(outf->filename, "w");
       if (!outf->gzfd) {
-	fprintf(stderr,"failed to open gz file for write");
-	free_output_file(head);
-	return(NULL);
+        fprintf(stderr,"failed to open gz file for write");
+        free_output_file(head);
+        return(NULL);
       }
     }
     else {
       outf->filetype = PLAINTEXT;
       outf->fd = fopen (outf->filename, "w");
       if (!outf->fd) {
-	fprintf(stderr,"failed to open file for write");
-	free_output_file(head);
-	return(NULL);
+        fprintf(stderr,"failed to open file for write");
+        free_output_file(head);
+        return(NULL);
       }
     }
 

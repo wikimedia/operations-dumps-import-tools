@@ -25,16 +25,16 @@
 
 /* skip over whitespace in the content buffer,
    refilling it as needed */
-#define SKIP_WS(f,s)		\
-  if (!s) { RELOAD(f,s); }	\
-  if (s) {			\
-    while (!*s || *s == ' ') {	\
-      while (*s == ' ') s++;	\
-      if (!*s) {		\
-	RELOAD(f,s);		\
-	if (!s) break;		\
-      }				\
-    }				\
+#define SKIP_WS(f,s)            \
+  if (!s) { RELOAD(f,s); }      \
+  if (s) {                      \
+    while (!*s || *s == ' ') {  \
+      while (*s == ' ') s++;    \
+      if (!*s) {                \
+        RELOAD(f,s);            \
+        if (!s) break;          \
+      }                         \
+    }                           \
   }
 
 /* globals for use in displaying
@@ -130,16 +130,16 @@ void field_append(char *start, char *end, string_t *append_to_me) {
     if (!end) {
       append_to_me->content = strdup(start);
       if (!append_to_me->content) {
-	show_error("failed to get memory for appending to field\n");
-	exit(-1);
+        show_error("failed to get memory for appending to field\n");
+        exit(-1);
       }
       append_to_me->length = strlen(start)+1;
     }
     else {
       append_to_me->content = strndup(start, end-start);
       if (!append_to_me->content) {
-	show_error("failed to get memory for appending to field\n");
-	exit(-1);
+        show_error("failed to get memory for appending to field\n");
+        exit(-1);
       }
       append_to_me->length = end-start+1;
     }
@@ -152,8 +152,8 @@ void field_append(char *start, char *end, string_t *append_to_me) {
     if (len_extended > append_to_me->length) {
       append_to_me->content = (char *)realloc(append_to_me->content, len_realloc);
       if (!append_to_me->content) {
-	show_error("failed to get memory for appending to field\n");
-	exit(-1);
+        show_error("failed to get memory for appending to field\n");
+        exit(-1);
       }
       append_to_me->length = len_realloc;
     }
@@ -243,8 +243,8 @@ char *do_field(input_file_t *sql, output_file_t *out, char *start, tuple_fields_
       field_append(start, ind, field);
       RELOAD(sql,start);
       if (!start) {
-	show_error("abrupt end to data after or in field %s\n", start);
-	return(NULL);
+        show_error("abrupt end to data after or in field %s\n", start);
+        return(NULL);
       }
       ind = start;
     }
@@ -253,13 +253,13 @@ char *do_field(input_file_t *sql, output_file_t *out, char *start, tuple_fields_
       field_append(start, ind, field);
       SKIP_WS(sql,ind);
       if (!ind) {
-	show_error("abrupt end to data after or in field %s\n", start);
-	return(NULL);
+        show_error("abrupt end to data after or in field %s\n", start);
+        return(NULL);
       }
       start = ind;
       if (*ind != ',' && *ind != ')') {
-	show_error("unexpected data encountered after quoted field: <%s>\n",ind);
-	return(NULL);
+        show_error("unexpected data encountered after quoted field: <%s>\n",ind);
+        return(NULL);
       }
       break; /* end of field with quote */
     }
@@ -267,13 +267,13 @@ char *do_field(input_file_t *sql, output_file_t *out, char *start, tuple_fields_
       field_append(start, ind, field);
       SKIP_WS(sql,ind);
       if (!ind) {
-	show_error("abrupt end to data after field %s\n", start);
-	return(NULL);
+        show_error("abrupt end to data after field %s\n", start);
+        return(NULL);
       }
       start = ind;
       if (*ind != ',' || *ind != ')') {
-	show_error("unexpected data encountered after unquoted field: <%s>\n",ind);
-	return(NULL);
+        show_error("unexpected data encountered after unquoted field: <%s>\n",ind);
+        return(NULL);
       }
       break; /* end of field with space */
     }
@@ -284,19 +284,19 @@ char *do_field(input_file_t *sql, output_file_t *out, char *start, tuple_fields_
     else {
       /* move ind along, skipping over escaped crap etc. */
       if (*ind == '\\') {
-	ind++;
-	if (!*ind) {
-	  sql->leftover[0] = '\\';
-	  sql->leftover[1] = '\0';
-	  field_append(start, ind-1, field); /* don't copy in the leftover backslash */
-	  RELOAD(sql,ind);
-	  if (!ind) {
-	    show_error("abrupt end to data after backslash in field %s\n", start);
-	    return(NULL);
-	  }
-	  start = ind;
-	}
-	else ind++;
+        ind++;
+        if (!*ind) {
+          sql->leftover[0] = '\\';
+          sql->leftover[1] = '\0';
+          field_append(start, ind-1, field); /* don't copy in the leftover backslash */
+          RELOAD(sql,ind);
+          if (!ind) {
+            show_error("abrupt end to data after backslash in field %s\n", start);
+            return(NULL);
+          }
+          start = ind;
+        }
+        else ind++;
       }
       else ind++;
     }
@@ -386,8 +386,8 @@ char *do_tuple(input_file_t *sql, output_file_t *out, char *start, int verbose, 
       start++;
       SKIP_WS(sql,start);
       if (!start) {
-	show_error("unexpected end of data after beginning of tuple\n");
-	return(NULL);
+        show_error("unexpected end of data after beginning of tuple\n");
+        return(NULL);
       }
     }
     else {
@@ -436,13 +436,13 @@ void write_fields(output_file_t *out, tuple_fields_t * fields, int col_mask, int
     if (!col_mask || (1<<(i+1) & col_mask)) {
       put_line(out,fields->f[i]->content);
       /* either col mask is all 1's, print them all (and then
-	 we had best make sure that there is another field left
-	 in the array to print), or
-	 it selects certain fields, (and then we must make sure there is
-	 a field left to be selected after this one */
+         we had best make sure that there is another field left
+         in the array to print), or
+         it selects certain fields, (and then we must make sure there is
+         a field left to be selected after this one */
       if ((i+1 < fields->used) && (!col_mask || ((1 << (i+2)) <= col_mask)) ) {
-	if (!raw) put_line(out, ",");
-	else put_line(out, " ");
+        if (!raw) put_line(out, ",");
+        else put_line(out, " ");
       }
     }
   }
@@ -503,11 +503,11 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
     if (get_line(sql) == NULL) {
       /* if we are in the middle of processing a line and we ran out, this is an error */
       if (line_started) {
-	show_error("unexpected end of file in the middle of a line\n");
-	return(-1);
+        show_error("unexpected end of file in the middle of a line\n");
+        return(-1);
       }
       else {
-	return(1); /* normal end */
+        return(1); /* normal end */
       }
     }
     line_started = 1;
@@ -515,15 +515,15 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
     if (strchr(sql->in_buf->content, '\n')) eol++;
     if (strncmp(sql->in_buf->content, "INSERT ", 6)) {
       if (!raw)
-	put_line(out, sql->in_buf->content); /* not an insert line, pass it through */
+        put_line(out, sql->in_buf->content); /* not an insert line, pass it through */
       while (!eol) {
-	if (get_line(sql) == NULL) {
-	  show_error("unexpected end of file in the middle of a line\n");
-	  return(-1);
-	}
-	if (strchr(sql->in_buf->content, '\n')) eol++;
-	if (!raw)
-	  put_line(out, sql->in_buf->content);
+        if (get_line(sql) == NULL) {
+          show_error("unexpected end of file in the middle of a line\n");
+          return(-1);
+        }
+        if (strchr(sql->in_buf->content, '\n')) eol++;
+        if (!raw)
+          put_line(out, sql->in_buf->content);
       }
       return(0);
     }
@@ -531,15 +531,15 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
     start = strstr(sql->in_buf->content, " VALUES (");
     if (!start) {
       if (!raw)
-	put_line(out, sql->in_buf->content); /* not an insert line, pass it through */
+        put_line(out, sql->in_buf->content); /* not an insert line, pass it through */
       while (!eol) {
-	if (get_line(sql) == NULL) {
-	  show_error("unexpected end of file in the middle of a line\n");
-	  return(-1);
-	}
-	if (strchr(sql->in_buf->content, '\n')) eol++;
-	if (!raw)
-	  put_line(out, sql->in_buf->content);
+        if (get_line(sql) == NULL) {
+          show_error("unexpected end of file in the middle of a line\n");
+          return(-1);
+        }
+        if (strchr(sql->in_buf->content, '\n')) eol++;
+        if (!raw)
+          put_line(out, sql->in_buf->content);
       }
       return(0);
     }
@@ -551,112 +551,112 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
 
     while (! eoi) {
       if (! *start) {
-	if (get_line(sql) == NULL) {
-	  show_error("unexpected end of file in the middle of a line\n");
-	  return(-1);
-	}
-	if (strchr(sql->in_buf->content, '\n')) eol++;
+        if (get_line(sql) == NULL) {
+          show_error("unexpected end of file in the middle of a line\n");
+          return(-1);
+        }
+        if (strchr(sql->in_buf->content, '\n')) eol++;
       }
 
       fields->used = 0;
       start = do_tuple(sql, out, start, verbose, fields);
       if (!start) {
-	return(-1);
+        return(-1);
       }
       tuples_done++;
       if (strchr(sql->in_buf->content, '\n')) eol++;
 
       if (*start == ';') {
-	eoi++;
+        eoi++;
       }
       else if (*start == ',') {
-	start++;
-	SKIP_WS(sql,start);
-	if (!start) {
-	  show_error("unexpected end of file in the middle of a line\n");
-	  return(-1);
-	}
-	/* find start of next tuple */
-	while (*start != '(') {
-	  if (!*start) {
-	    RELOAD(sql,start);
-	    if (!start) break;
-	  }
-	  else start++;
-	}
-	if (!start) {
-	  show_error("unexpected end of file when looking for tuple in the middle of a line\n");
-	  return(-1);
-	}
+        start++;
+        SKIP_WS(sql,start);
+        if (!start) {
+          show_error("unexpected end of file in the middle of a line\n");
+          return(-1);
+        }
+        /* find start of next tuple */
+        while (*start != '(') {
+          if (!*start) {
+            RELOAD(sql,start);
+            if (!start) break;
+          }
+          else start++;
+        }
+        if (!start) {
+          show_error("unexpected end of file when looking for tuple in the middle of a line\n");
+          return(-1);
+        }
       }
       else {
-	show_error("unexpected content in middle of line: <%s>\n", start);
-	return(-1);
+        show_error("unexpected content in middle of line: <%s>\n", start);
+        return(-1);
       }
       filtered = 0;
 
       if (fhoh != NULL) {
-	if (fields->used < HASH_COUNT(fhoh)) {
-	  /*  we have a spec for a field num > number of actual fields in tuple */
-	  fprintf(stderr,"number of fields in tuple (%d) less than column required for filter (%d), giving up\n", fields->used, HASH_COUNT(fhoh));
-	  exit(1);
-	}
-	for (col_num=1; col_num<= fields->used; col_num++) {
-	  fhoh_entry = NULL;
-	  /* check each field */
-	  HASH_FIND_INT(fhoh, &col_num, fhoh_entry);
-	  if (fhoh_entry) {
-	    if (fhoh_entry->hashtype == HASHINT) {
-	      key = atoi(fields->f[col_num -1]->content);
-	      found_int = NULL;
-	      HASH_FIND_INT(fhoh_entry->fint, &key, found_int);
-	      if (!found_int) {
-		filtered = 1;
-		break;
-	      }
-	    }
-	    else if (fhoh_entry->hashtype == HASHSTR) {
-	      keystr = fields->f[col_num -1]->content;
-	      /* remove enclosing quotes */
-	      if (keystr[strlen(keystr)-1] != '\'' && strcmp(keystr,"NULL")) {
-		/* should never happen but you never know etc */
-		fprintf(stderr,"missing close quote for field, skipping <%s> in column %d\n", keystr, col_num);
-		filtered = 1;
-		break;
-	      }
-	      else {
-		keystr[strlen(keystr)-1] = '\0';
-		found_str = NULL;
-		HASH_FIND_STR(fhoh_entry->fstr, keystr+1, found_str);
-		keystr[strlen(keystr)] = '\'';
-		if (!found_str) {
-		  filtered = 1;
-		  break;
-		}
-	      }
-	    }
-	    else {
-	      fprintf(stderr,"Unknown hash key type requested, giving up\n");
-	      exit(1);
-	    }
-	  }
-	}
+        if (fields->used < HASH_COUNT(fhoh)) {
+          /*  we have a spec for a field num > number of actual fields in tuple */
+          fprintf(stderr,"number of fields in tuple (%d) less than column required for filter (%d), giving up\n", fields->used, HASH_COUNT(fhoh));
+          exit(1);
+        }
+        for (col_num=1; col_num<= fields->used; col_num++) {
+          fhoh_entry = NULL;
+          /* check each field */
+          HASH_FIND_INT(fhoh, &col_num, fhoh_entry);
+          if (fhoh_entry) {
+            if (fhoh_entry->hashtype == HASHINT) {
+              key = atoi(fields->f[col_num -1]->content);
+              found_int = NULL;
+              HASH_FIND_INT(fhoh_entry->fint, &key, found_int);
+              if (!found_int) {
+                filtered = 1;
+                break;
+              }
+            }
+            else if (fhoh_entry->hashtype == HASHSTR) {
+              keystr = fields->f[col_num -1]->content;
+              /* remove enclosing quotes */
+             if (keystr[strlen(keystr)-1] != '\'' && strcmp(keystr,"NULL")) {
+                /* should never happen but you never know etc */
+                fprintf(stderr,"missing close quote for field, skipping <%s> in column %d\n", keystr, col_num);
+                filtered = 1;
+                break;
+              }
+              else {
+                keystr[strlen(keystr)-1] = '\0';
+                found_str = NULL;
+                HASH_FIND_STR(fhoh_entry->fstr, keystr+1, found_str);
+                keystr[strlen(keystr)] = '\'';
+                if (!found_str) {
+                  filtered = 1;
+                  break;
+                }
+              }
+            }
+            else {
+              fprintf(stderr,"Unknown hash key type requested, giving up\n");
+              exit(1);
+            }
+          }
+        }
       }
       if (!filtered) {
-	if (header.length) { /* first write of tuple from this line */
-	  if (!raw)
-	    put_line(out, header.content);
-	  free(header.content);
-	  header.content = NULL;
-	  header.length = 0;
-	}
-	else {
-	  if (!raw)
-	    put_line(out,","); /* second or later write of tuple from this line */
-	}
-	write_fields(out, fields, col_mask, raw);
-	fields->used = 0;
-	wrote_tuple++;
+        if (header.length) { /* first write of tuple from this line */
+          if (!raw)
+            put_line(out, header.content);
+          free(header.content);
+          header.content = NULL;
+          header.length = 0;
+        }
+        else {
+          if (!raw)
+            put_line(out,","); /* second or later write of tuple from this line */
+        }
+        write_fields(out, fields, col_mask, raw);
+        fields->used = 0;
+        wrote_tuple++;
       }
     }
     /* we are left either with:
@@ -669,8 +669,8 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
     */
     if (eoi) {
       if (wrote_tuple)
-	if (!raw)
-	  put_line(out,";\n");
+        if (!raw)
+          put_line(out,";\n");
     }
   }
   return(0);
@@ -886,8 +886,8 @@ char *find_field_end(char *field) {
     end = field;
     while (*end) {
       if (!isdigit(*end)) {
-	fprintf(stderr,"bad value for field, non-digits in numerical value <%s>\n", field);
-	return(NULL);
+        fprintf(stderr,"bad value for field, non-digits in numerical value <%s>\n", field);
+        return(NULL);
       }
       end++;
     }
@@ -897,8 +897,8 @@ char *find_field_end(char *field) {
     end = field+1;
     while (*end  && *end != '\'') {
       if (*end == '\\') { /* deal with escaped characters */
-	end++;
-	if (*end) end++; /* otherwise the error will be caught by not field ending in quote */
+        end++;
+        if (*end) end++; /* otherwise the error will be caught by not field ending in quote */
       }
       else end++; /* regular character */
     }
@@ -1100,25 +1100,25 @@ int main(int argc, char **argv) {
     col_mask = 0;
     while (*start) {
       if ((end = strchr(start, ','))){
-	*end = '\0';
-	temp = start;
-	while (*temp) {
-	  if (! isdigit(*temp))
-	    usage(argv[0],"cols option must be a comma separated list of positive numbers");
-	  temp++;
-	}
-	col_mask |= 1<<atoi(start);
-	start = end + 1;
+        *end = '\0';
+        temp = start;
+        while (*temp) {
+          if (! isdigit(*temp))
+            usage(argv[0],"cols option must be a comma separated list of positive numbers");
+          temp++;
+        }
+        col_mask |= 1<<atoi(start);
+        start = end + 1;
       }
       else {
-	temp = start;
-	while (*temp) {
-	  if (! isdigit(*temp))
-	    usage(argv[0],"cols option must be a comma separated list of positive numbers");
-	  temp++;
-	}
-	col_mask |= 1<<atoi(start);
-	break;
+        temp = start;
+        while (*temp) {
+          if (! isdigit(*temp))
+            usage(argv[0],"cols option must be a comma separated list of positive numbers");
+          temp++;
+        }
+        col_mask |= 1<<atoi(start);
+        break;
       }
     }
   }
