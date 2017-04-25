@@ -7,3 +7,6 @@
 mwxml2sql
 sql2txt
 sqlfilter
+
+# ignore run artifacts
+*.pyc
