@@ -104,7 +104,7 @@ char *get_filesuffix(char *file_name, int verbose) {
 
   returns a pointer to the compressed data, or NULL on error
 
-  note that gz_buf must be at least 1.015* size of input plus 5 
+  note that gz_buf must be at least 1.015* size of input plus 5
 */
 char *gzipit(char *contents, int *compressed_length, char *gz_buf, int gz_buf_length) {
   z_stream stream;
@@ -145,7 +145,7 @@ int isfull(bz2buffer_t *b) {
     fd     pointer to file structure for open bz2 file
 
     returns: 1 on success, 0 otherwise (e.g. eof encountered)
-*/  
+*/
 int fill_buffer(bz2buffer_t *b, BZFILE *fd) {
   int result;
 
@@ -159,13 +159,13 @@ int fill_buffer(bz2buffer_t *b, BZFILE *fd) {
   else return (0);
 }
 
-/* 
+/*
   args:
     b      bz2 buffer
 
-   check available output bytes for '\n' 
+   check available output bytes for '\n'
 
-   return index of newline in string (relative to 
+   return index of newline in string (relative to
    nextout)
    (which may be '\0' or past the allocated buffer length)
    or -1 if not found
@@ -211,7 +211,7 @@ void dump_bz2buffer(bz2buffer_t *b) {
     b         bz2 buffer
     out       holder where data read will be copied
     out_size  size of holder
-    
+
   returns:
     pointer to the output buffer if any data was read and copied
     NULL otherwise
@@ -275,7 +275,7 @@ char *bz2gets(BZFILE *fd, bz2buffer_t *b, char *out, int out_size) {
     f         structure for input file
     buf       holder where data read will be copied
     length    size of holder
-    
+
   returns:
     pointer to the output buffer if any data was read and copied
     NULL otherwise
@@ -300,7 +300,7 @@ char *get_line2buffer(input_file_t *f, char *buf, int length) {
 /*
   args:
     f         structure for input file
-    
+
   returns:
     pointer to the file cntent buffer if any data was read and copied
     NULL otherwise
@@ -340,7 +340,7 @@ char *get_line(input_file_t *f) {
     return(fgets(start, length, f->fd)?f->in_buf->content:NULL);
 }
 
-/* 
+/*
   args:
      f      structure for output file
      line   null terminates string to write to file
@@ -351,7 +351,7 @@ char *get_line(input_file_t *f) {
   this function will write the given line of output
   to the spcified file
 
-   expects a trailing newline if you want one in there :-P 
+   expects a trailing newline if you want one in there :-P
 */
 int put_line(output_file_t *f, char *line) {
   if (f->filetype == BZCOMPRESSED)
@@ -684,7 +684,7 @@ output_file_t *init_output_file(char *basename, char *suffix, mw_version_t *mwv)
 */
 void close_input_file(input_file_t *f) {
   if (f) {
-    if (f->fd) 
+    if (f->fd)
       fclose(f->fd);
     else if (f->gzfd)
       gzclose(f->gzfd);
@@ -707,7 +707,7 @@ void close_output_file(output_file_t *f) {
   while (f) {
     next = f->next;
 
-    if (f->fd && f-> fd != stdout) 
+    if (f->fd && f-> fd != stdout)
       fclose(f->fd);
     else if (f->gzfd)
       gzclose(f->gzfd);

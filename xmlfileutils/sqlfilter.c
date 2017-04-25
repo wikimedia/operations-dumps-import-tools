@@ -104,7 +104,7 @@ void show_error(char *message, ...) {
   return;
 }
 
-/* 
+/*
    args:
      start         -- pointer to start of string to append to existing field
      end           -- pointer to byte after end of string to append
@@ -437,11 +437,11 @@ void write_fields(output_file_t *out, tuple_fields_t * fields, int col_mask, int
       put_line(out,fields->f[i]->content);
       /* either col mask is all 1's, print them all (and then
 	 we had best make sure that there is another field left
-	 in the array to print), or 
+	 in the array to print), or
 	 it selects certain fields, (and then we must make sure there is
 	 a field left to be selected after this one */
       if ((i+1 < fields->used) && (!col_mask || ((1 << (i+2)) <= col_mask)) ) {
-	if (!raw) put_line(out, ","); 
+	if (!raw) put_line(out, ",");
 	else put_line(out, " ");
       }
     }
@@ -453,7 +453,7 @@ void write_fields(output_file_t *out, tuple_fields_t * fields, int col_mask, int
   return;
 }
 
-/* 
+/*
    args:
       sql      initialized structure for input file with sql insert statements
       out      initialized structure for output file
@@ -628,7 +628,7 @@ int do_line(input_file_t *sql, output_file_t *out, tuple_fields_t *fields, int c
 		keystr[strlen(keystr)-1] = '\0';
 		found_str = NULL;
 		HASH_FIND_STR(fhoh_entry->fstr, keystr+1, found_str);
-		keystr[strlen(keystr)] = '\'';	
+		keystr[strlen(keystr)] = '\'';
 		if (!found_str) {
 		  filtered = 1;
 		  break;
@@ -770,7 +770,7 @@ void usage(char *whoami, char *message) {
   exit(-1);
 }
 
-/* 
+/*
    args:
      firstchar  -- first character of field from a tuple
 
@@ -825,7 +825,7 @@ int add_to_hash(char *s, int colno) {
     fhoh_entry->colnum = colno;
     fhoh_entry->fint = NULL;
     fhoh_entry->fstr = NULL;
-    HASH_ADD_KEYPTR(hh, fhoh, &(fhoh_entry->colnum), sizeof(int), fhoh_entry); 
+    HASH_ADD_KEYPTR(hh, fhoh, &(fhoh_entry->colnum), sizeof(int), fhoh_entry);
   }
 
   if (hashtype == HASHSTR) {
@@ -844,7 +844,7 @@ int add_to_hash(char *s, int colno) {
       exit(1);
     }
     fv_str->value = strdup(++s);
-    HASH_ADD_KEYPTR(hh, fhoh_entry->fstr, fv_str->value, strlen(fv_str->value),fv_str); 
+    HASH_ADD_KEYPTR(hh, fhoh_entry->fstr, fv_str->value, strlen(fv_str->value),fv_str);
   }
   else if (hashtype == HASHINT) {
     if (*s == '\'') {
@@ -857,7 +857,7 @@ int add_to_hash(char *s, int colno) {
       exit(1);
     }
     fv_int->value = atoi(s);
-    HASH_ADD_KEYPTR(hh, fhoh_entry->fint, &(fv_int->value), sizeof(int),fv_int); 
+    HASH_ADD_KEYPTR(hh, fhoh_entry->fint, &(fv_int->value), sizeof(int),fv_int);
   }
   else {
     fprintf(stderr,"bad hashtype encountered in filters value holders: <%d>\n", hashtype);
@@ -869,7 +869,7 @@ int add_to_hash(char *s, int colno) {
 /*
   args:
     field  -- pointer to start of field from tuple
-  
+
   this function returns a pointer to the first
   byte after the field, skipping over backslash-escaped
   characters in quoted strings, if any.
@@ -1079,7 +1079,7 @@ int main(int argc, char **argv) {
       help++;
       break;
     case 'v':
-      verbose++; 
+      verbose++;
       break;
     case 'w':
       version++;

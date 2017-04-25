@@ -490,7 +490,7 @@ void write_createtables_file(output_file_t *f, int nodrop, int table_compress, t
     }
     snprintf(out_buf, sizeof(out_buf), ";\n\n");
     put_line(f, out_buf);
-    
+
     if (!nodrop) {
       snprintf(out_buf, sizeof(out_buf), "DROP TABLE IF EXISTS `%s`;\n", t->page);
       put_line(f, out_buf);
@@ -576,7 +576,7 @@ void write_createtables_file(output_file_t *f, int nodrop, int table_compress, t
     put_line(f, out_buf);
     snprintf(out_buf, sizeof(out_buf), "KEY `page_len` (`page_len`),\n");
     put_line(f, out_buf);
-  
+
     if (MWV_GREATER(mwv,1,18)) {
       snprintf(out_buf, sizeof(out_buf), "KEY `page_redirect_namespace_len` (`page_is_redirect`,`page_namespace`,`page_len`)\n");
       put_line(f, out_buf);
@@ -708,10 +708,10 @@ void write_createtables_file(output_file_t *f, int nodrop, int table_compress, t
 */
 tablenames_t *setup_table_names(char *prefix) {
   tablenames_t *t = NULL;
- 
+
   t = (tablenames_t *)malloc(sizeof(tablenames_t));
   if (!t) return(NULL);
-  
+
   if (prefix) {
     if (strlen(prefix) > (80 - strlen("revision") - 1)) {
       fprintf(stderr,"Table prefix longer than 80 characters.  Seriously??\n");

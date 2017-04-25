@@ -8,7 +8,7 @@
   what a waste
 */
 
-/* 
+/*
    args:
      in       array of ints, 3 bytes per int (leave the upper 4th byte
               free, it's needed for overflow for multibyte calculations)
@@ -44,7 +44,7 @@ int tobase36(unsigned int *in, unsigned int *in_copy, unsigned int *temp, int in
   while (1) {
     in_ind = temp_ind = overflow = 0;
     while (!in_copy[in_ind] && (in_ind < in_len)) in_ind++;
-    
+
     while (in_ind < in_len) {
       if (in_copy[in_ind] < 36) {
 	overflow = in_copy[in_ind++];
@@ -69,7 +69,7 @@ int tobase36(unsigned int *in, unsigned int *in_copy, unsigned int *temp, int in
   }
 }
 
-/* 
+/*
    args:
      c       character representing a hex digit, lower case
 
@@ -87,7 +87,7 @@ int char2int(char c) {
 /*
   args:
      s           character string representing hex digits
-     len         length of s (it does not need to be null-terminated) 
+     len         length of s (it does not need to be null-terminated)
      intbuf      pre-allocated array of integers into which the result
                  will be placed, 3 bytes per int.  no checks
                  are made as to the length being sufficient, this is the
@@ -113,12 +113,12 @@ int hexstring2int(char *s, int len, unsigned int *intbuf) {
     len-=1;
   }
   if (intbuf[int_ind]) int_ind++;
-  
+
   while (len>0) {
     intbuf[int_ind] = 0;
     for (i=0; i<6; i++) {
       intbuf[int_ind] = char2int(s[s_ind++]) | (intbuf[int_ind] << 4);
-    }    
+    }
     len -=6;
     int_ind++;
   }
@@ -141,7 +141,7 @@ char int2char(int i) {
   return(map[i]);
 }
 
-/* 
+/*
    args:
       int_buf        array of ints, one base-36 digit per int
       int_buf_len    length of array of ints
@@ -171,7 +171,7 @@ void int2string(unsigned int *int_buf, int int_buf_len, char *s) {
 }
 
 /*
-  typical usage: 
+  typical usage:
 
 int main() {
   char s_in[41];

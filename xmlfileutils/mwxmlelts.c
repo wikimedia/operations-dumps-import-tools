@@ -194,7 +194,7 @@ int do_contributor(input_file_t *f, contributor_t *c, int verbose) {
   returns:
     0 on success
     -1 if not found or on error
-    
+
   this function scans from the current position in the
   xml file line by line looking for a revision with the
   specified revision id
@@ -510,7 +510,7 @@ int do_text(input_file_t *f,  output_file_t *sqlt, revision_t *r, int verbose, t
     text_bytes_written = 0;
   }
 
-  
+
   /*
      for cases where we have to compute it ourselves.
      more recent schemas have bytes attr in the text tag of
@@ -562,7 +562,7 @@ int do_text(input_file_t *f,  output_file_t *sqlt, revision_t *r, int verbose, t
    insert statement for the text content to the output file for the text table
    while the tuple for the insert is written one per row, BEGIN/COMMIT and INSERT are written
    for every MAX_REV_BATCH lines
-   
+
    args:
      stubs:           structure for stubs XML file
      text:            structure for page content XML file
@@ -784,7 +784,7 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
     whine("no rev end tag for rev id %s", r.id);
     return(0);
   }
-  /* 
+  /*
      If schema is earlier than 0.5 or for some other reason we don't
      hve the bytes attr in the text tag, AND we aren't reading the
      text content file, rev_len will be blithely inserted as 0. You have
@@ -836,20 +836,20 @@ int do_revision(input_file_t *stubs, input_file_t *text, int text_compress, outp
 (rev_id, rev_page, rev_text_id, rev_comment, rev_user, \
 rev_user_text, rev_timestamp, rev_minor_edit, rev_deleted", \
 	     insert_ignore?"IGNORE":"", t->revs);
-    put_line_all(sqlr, out_buf);    
+    put_line_all(sqlr, out_buf);
     if (verbose > 2) fprintf(stderr,"(%s) %s",t->revs, out_buf);
 
     strcpy(out_buf, ", rev_len, rev_parent_id");
-    write_if_mwv(sqlr, 1,9,0,0,out_buf, verbose);    
+    write_if_mwv(sqlr, 1,9,0,0,out_buf, verbose);
 
     strcpy(out_buf, ", rev_sha1");
-    write_if_mwv(sqlr, 1,18,0,0,out_buf, verbose);    
+    write_if_mwv(sqlr, 1,18,0,0,out_buf, verbose);
 
     strcpy(out_buf, ", rev_content_model, rev_content_format");
-    write_if_mwv(sqlr, 1,20,0,0,out_buf, verbose);    
+    write_if_mwv(sqlr, 1,20,0,0,out_buf, verbose);
 
     strcpy(out_buf,") VALUES\n");
-    put_line_all(sqlr, out_buf);    
+    put_line_all(sqlr, out_buf);
     if (verbose > 2) fprintf(stderr,"(%s) %s",t->revs, out_buf);
 
   }
@@ -913,7 +913,7 @@ rev_user_text, rev_timestamp, rev_minor_edit, rev_deleted", \
   returns:
     0 on success
     -1 if not found or on error
-    
+
   this function scans from the current position in the
   xml file line by line looking for a page with the
   specified page id
@@ -1219,7 +1219,7 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
     put_line_all(sqlp, out_buf);
     if (verbose > 2) fprintf(stderr,"%s,\n",out_buf);
     page_rows_written++;
-  }    
+  }
 
   if (get_end_tag(stubs, PAGE) == -1) {
     whine("no end page tag");
@@ -1228,7 +1228,7 @@ int do_page(input_file_t *stubs, input_file_t *text, int text_compress, output_f
   return(1);
 }
 
-/* 
+/*
    args:
       s      string for parsing
       name   holder for attr name
@@ -1284,7 +1284,7 @@ int get_attr( char *s, char *name, char *value, char **todo) {
   return(1);
 }
 
-/* 
+/*
    <namespace key="-2" case="first-letter">Media</namespace>
    <namespace key="0" case="first-letter" />
 
@@ -1546,7 +1546,7 @@ int do_siteinfo(input_file_t *f, siteinfo_t **s_info, int verbose) {
      next line available for scanning, if the element
        is successfully read
 
-   on return, schema will point to a string containing 
+   on return, schema will point to a string containing
    the export xsd version (e.g. '0.8') on success
    and will contain NULL on error.
 */
@@ -1574,7 +1574,7 @@ int do_mw_header(input_file_t *f, int skipschema, char **schema, int verbose) {
   return(1);
 }
 
-/*                                                                                                                                        
+/*
    this function reads a MediaWiki XML input stream (either stubs or
    page content) and collects information from the <mediawiki> and
    <siteinfo> elements.  Once it has reached the end of those elements
@@ -1601,7 +1601,7 @@ int do_mw_header(input_file_t *f, int skipschema, char **schema, int verbose) {
      next line available for scanning, if the element
        is successfully read
 
-   on return, schema will point to a string containing 
+   on return, schema will point to a string containing
        the export xsd version (e.g. '0.8') on success
        and will contain NULL on error.
 

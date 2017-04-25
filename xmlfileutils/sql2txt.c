@@ -19,7 +19,7 @@
 
 int lines_done = 0;
 int tuples_done = 0;
-  
+
 void show_error(char *message, ...) {
   va_list argptr;
 
@@ -358,7 +358,7 @@ int main(int argc, char **argv) {
       help++;
       break;
     case 'v':
-      verbose++; 
+      verbose++;
       break;
     case 'V':
       version++;

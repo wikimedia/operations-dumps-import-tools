@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
 
   int pages_done = 0;
   int eof = 0;
-  
+
   char *table_prefix =  NULL;
   tablenames_t *tables = NULL;
 
@@ -329,7 +329,7 @@ int main(int argc, char **argv) {
       text_file = optarg;
       break;
     case 'v':
-      verbose++; 
+      verbose++;
       break;
     case 'V':
       version++;
@@ -366,7 +366,7 @@ int main(int argc, char **argv) {
       i++;
     }
     howmany = i + 1; /* byte count including -1 at the end, rather than 0-based index */
-    ns_list = (int *) malloc(sizeof(int *) * howmany);    
+    ns_list = (int *) malloc(sizeof(int *) * howmany);
     if (!ns_list) {
       fprintf(stderr,"Failed to get memory for list of namespaces to skip\n");
       exit(1);
@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
       sprintf(mysql_text_file, "%s-text.sql", filebase);
       mysql_text = init_output_file(mysql_text_file, filesuffix, mwv);
     }
-    
+
     if (verbose) fprintf(stderr,"opened sql output files\n");
   }
 

@@ -17,7 +17,7 @@
 
 #include "mwxml2sql.h"
 
-/* 
+/*
    args:
      f            file structure with file content buffer to check
      holder       preallocated memory into which to copy the tag name if
@@ -39,7 +39,7 @@
      -1 otherwise
 */
 int find_first_tag(input_file_t *f, char *holder, int holder_size) {
-  
+
   /* either: <tagname> or <tagname a="b" ... > or <tagname /> */
   int ind=0;
   int start_tag_name;
@@ -58,7 +58,7 @@ int find_first_tag(input_file_t *f, char *holder, int holder_size) {
   while (buf[ind] && buf[ind] == ' ')ind++;
   if (!buf[ind]) return(-1); /* '<' and maybe spaces and nothing else. reject that. */
   start_tag_name = ind;
-  
+
   while (buf[ind] && buf[ind] != ' ' && buf[ind] != '>' && !(buf[ind] == '/' && buf[ind+1] == '>')) ind++;
   if (holder) {
     length = ind-start_tag_name;
@@ -138,7 +138,7 @@ int find_attrs(input_file_t *f, int start, char *holder, int holder_size) {
 		  will not be null-terminated
 
    this function expects the value to start the line; leading spaces
-   will be considered part of the value, and content will be read from 
+   will be considered part of the value, and content will be read from
    the file input buffer until a '<' is encountered. If the buffer does not
    contain '<' then lines will be read from the input stream f and added
    to the input byffer until such a lime is found, the input buffer is
@@ -271,7 +271,7 @@ int find_simple_close_tag(input_file_t *f, int start) {
   return(ind);
 }
 
-/* 
+/*
    args:
      f         file structure with file content buffer to check
      tag_name  name of xml tag to find
@@ -356,9 +356,9 @@ int get_elt_with_attrs(input_file_t *f, char *tag_name, char *holder, int holder
   char tag[MAX_TAG_NAME_LEN];
   int ind;
 
-  /* 
+  /*
      <blah attr = " stuff " attr2 = "stuff" ... >value in here\n more value <tag />
-     <blah attr = " stuff " attr2 = "stuff" ... /> 
+     <blah attr = " stuff " attr2 = "stuff" ... />
      <text id="382338088" bytes="57" />
      <redirect title="Bon Jovi/New Jersey" />
   */
