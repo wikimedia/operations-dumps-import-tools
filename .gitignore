@@ -1,0 +1,9 @@
+# no emacs backup files
+*~
+
+# ignore build artifacts
+*.o
+*.gz
+mwxml2sql
+sql2txt
+sqlfilter
