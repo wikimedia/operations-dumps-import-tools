@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
-import os, re, sys, getopt, urllib, gzip, bz2, subprocess, json, time, select, shutil, string
+import re
+import sys
+import getopt
+import urllib
+import json
+import string
 from wikifile import File
+
 
 class WikiContentErr(Exception):
     pass
 
+
 class NsDict(object):
 
-    def __init__(self, langCode, project, verbose = False):
+    def __init__(self, langCode, project, verbose=False):
         """Constructor. Arguments:
         langCode   -- language code of project, like en el etc.
         project    -- type of project, like wiktionary, wikipedia, etc.
@@ -21,8 +28,9 @@ class NsDict(object):
         and store in in dict form.
         On error raises an exception."""
 
-        # http://en.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=namespaces&format=json 
-        apiUrl = "http://" + self.langCode + "." + self.project + "." + "org/w/api.php" + "?action=query&meta=siteinfo&siprop=namespaces&format=json"
+        # http://en.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=namespaces&format=json
+        apiUrl = ("http://" + self.langCode + "." + self.project + "." +
+                  "org/w/api.php" + "?action=query&meta=siteinfo&siprop=namespaces&format=json")
         nsDict = {}
         ufd = urllib.urlopen(apiUrl)
         if str(ufd.getcode()).startswith("2"):
@@ -40,9 +48,10 @@ class NsDict(object):
         else:
             code = ufd.getcode()
             ufd.close()
-            raise WikiContentErr("Error trying to retrieve namespace info: %s\n" % code);
+            raise WikiContentErr("Error trying to retrieve namespace info: %s\n" % code)
 
         return nsDict
+
 
 class TitlesDict(object):
     def __init__(self, nsDictByString):
@@ -50,26 +59,27 @@ class TitlesDict(object):
         nsDictByString  -- hash of nstitle => nsnum"""
         self.nsDictByString = nsDictByString
 
-    def getTitlesDict(self,sqlFile):
+    def getTitlesDict(self, sqlFile):
         """Arguments:
         sqlFile         -- file containing pageid whitespace nsnum whitespace pagetitle where the title
                            is expected to be sql escaped and can be enclosed with single quotes"""
         fd = File.openInput(sqlFile)
         t = {}
         for line in fd:
-            (pageid, ns, title) = line.split(' ',3)
+            (pageid, ns, title) = line.split(' ', 3)
             ns = int(ns)
             if title in t:
                 t[title][ns] = pageid
             else:
-                t[title] = { ns: pageid }
+                t[title] = {ns: pageid}
         return t
+
 
 class LoggingXml(object):
     def __init__(self, nsDictByString, titlesDict, xmlFile, outputFile, userOutFile):
         """Constructor. Arguments:
         nsDictByString  -- hash of nstitle => nsnum
-        titlesDict      -- hash of pagetitle => [ pageid, nsnum ]
+        titlesDict      -- hash of pagetitle => [pageid, nsnum]
         xmlFile         -- path to filename with logging.xml
         logOutFile      -- path to logging output filename"""
 
@@ -105,8 +115,8 @@ class LoggingXml(object):
         self.compiledNoParamsPattern = re.compile(self.noParamsPattern)
         self.endLogitemPattern = "^\s*</logitem>\s*\n$"
         self.compiledEndLogitemPattern = re.compile(self.endLogitemPattern)
-        self.all=string.maketrans('','')
-        self.nodigs=self.all.translate(self.all, string.digits)
+        self.all = string.maketrans('', '')
+        self.nodigs = self.all.translate(self.all, string.digits)
 
     def skipHeader(self, fd):
         """skip over mediawiki site header etc"""
@@ -115,7 +125,7 @@ class LoggingXml(object):
         for line in fd:
             if compiledEndHeaderPattern.match(line):
                 return True
-        return False # never found it
+        return False  # never found it
 
     def unXMLEscape(self, title):
         """Convert XML sanitized title to its regular format.
@@ -128,10 +138,10 @@ class LoggingXml(object):
         title = title.replace("&lt;", '<')
         title = title.replace("&gt;", '>')
         title = title.replace("&#039;", "'")
-        title = title.replace("&amp;", '&') # this one must be last
+        title = title.replace("&amp;", '&')  # this one must be last
         return title
 
-    def sqlEscape(self, string, underscores = True):
+    def sqlEscape(self, string, underscores=True):
         """Escape string in preparation for it to be written
         to an sql file for import.
         $wgLegalTitleChars = " %!\"$&'()*,\\-.\\/0-9:;=?@A-Z\\\\^_`a-z~\\x80-\\xFF+";
@@ -156,7 +166,8 @@ class LoggingXml(object):
     #      <username>Leonariso</username>
     #      <id>3</id>
     #    </contributor>
-    #    <comment>content was: ''''Έντονης γραφής κείμενο'''''Πλάγιας γραφής κείμενο''[[Τίτλος σύνδεσης]]== Headline text ==[[...'</comment>
+    #    <comment>content was: ''''Έντονης γραφής κείμενο'''''Πλάγιας γραφής \
+    #                 κείμενο''[[Τίτλος σύνδεσης]]== Headline text ==[[...'</comment>
     #    <type>delete</type>
     #    <action>delete</action>
     #    <logtitle>Βικιλεξικό:By topic</logtitle>
@@ -170,7 +181,7 @@ class LoggingXml(object):
         result = self.compiledLogitemPattern.match(line)
         if not result:
             if "</mediawiki" in line:
-                return True # eof
+                return True  # eof
             else:
                 raise WikiContentErr("bad line in logging file, expected <logitem>, found <%s>\n" % line)
 
@@ -189,8 +200,9 @@ class LoggingXml(object):
         line = fd.readline()
         result = self.compiledContributorPattern.match(line)
         if not result:
-            if not "<contributor deleted" in line:
-                raise WikiContentErr("bad line in logging file, expected <contributor>, found <%s>\n" % line)
+            if "<contributor deleted" not in line:
+                raise WikiContentErr("bad line in logging file, expected <contributor>, " +
+                                     "found <%s>\n" % line)
             else:
                 username = ''
                 userid = '0'
@@ -198,7 +210,8 @@ class LoggingXml(object):
             line = fd.readline()
             result = self.compiledUsernamePattern.match(line)
             if not result:
-                raise WikiContentErr("bad line in logging file, expected <username>, found <%s>\n" % line)
+                raise WikiContentErr("bad line in logging file, expected <username>, " +
+                                     "found <%s>\n" % line)
             username = result.group("u")
 
             line = fd.readline()
@@ -210,7 +223,8 @@ class LoggingXml(object):
             line = fd.readline()
             result = self.compiledEndContributorPattern.match(line)
             if not result:
-                raise WikiContentErr("bad line in logging file, expected </contributor>, found <%s>\n" % line)
+                raise WikiContentErr("bad line in logging file, expected </contributor>, " +
+                                     "found <%s>\n" % line)
 
         line = fd.readline()
         if "<comment>" not in line:
@@ -244,7 +258,8 @@ class LoggingXml(object):
             if "<text deleted" in line:
                 logtitle = ''
             else:
-                raise WikiContentErr("bad line in logging file, expected <logtitle>, found <%s>\n" % line)
+                raise WikiContentErr("bad line in logging file, expected <logtitle>, " +
+                                     "found <%s>\n" % line)
         else:
             logtitle = result.group("l")
 
@@ -261,13 +276,15 @@ class LoggingXml(object):
                     line = line + fd.readline()
                 result = self.compiledParamsPattern.match(line)
                 if not result:
-                    raise WikiContentErr("bad line in logging file, expected <params  xml:space=\"preserve\" />, found <%s> for %s\n" % (line, logtitle))
+                    raise WikiContentErr("bad line in logging file, expected " +
+                                         "<params  xml:space=\"preserve\" />, " +
+                                         "found <%s> for %s\n" % (line, logtitle))
                 else:
                     params = result.group("p")
                     line = fd.readline()
-            else: # it's some other tag, this elt was missing altogether
+            else:  # it's some other tag, this elt was missing altogether
                 params = ''
-        
+
         result = self.compiledEndLogitemPattern.match(line)
         if not result:
             raise WikiContentErr("bad line in logging file, expected </logitem>, found <%s>\n" % line)
@@ -277,7 +294,7 @@ class LoggingXml(object):
         if sep != -1:
             prefix = logtitle[:sep]
             if prefix in self.nsDictByString:
-                pagetitle = self.sqlEscape(self.unXMLEscape(logtitle[sep+1:]))
+                pagetitle = self.sqlEscape(self.unXMLEscape(logtitle[sep + 1:]))
                 nsnum = self.nsDictByString[prefix]
                 if pagetitle in self.titlesDict:
                     pageid = self.titlesDict[pagetitle][nsnum]
@@ -302,7 +319,9 @@ class LoggingXml(object):
         username = self.sqlEscape(self.unXMLEscape(username), False)
         params = self.sqlEscape(self.unXMLEscape(params), False)
 
-        line = "INSERT INTO logging ( log_id, log_type, log_action, log_timestamp, log_user, log_user_text, log_namespace, log_title, log_page, log_comment, log_params, log_deleted ) VALUES "
+        line = ("INSERT INTO logging ( log_id, log_type, log_action, " +
+                "log_timestamp, log_user, log_user_text, log_namespace, " +
+                "log_title, log_page, log_comment, log_params, log_deleted ) VALUES ")
         logOutFd.write(unicode(line).encode('utf-8'))
         username = username.decode('utf-8')
         pagetitle = pagetitle.decode('utf-8')
@@ -311,22 +330,31 @@ class LoggingXml(object):
         nsnum = str(nsnum)
         # need 20130425122902, have 2005-07-23T16:43:37Z
         timestamp = timestamp.translate(self.all, self.nodigs)
-        
-        line = "( %s );\n" % ", ".join([ logid, "'" + type+ "'", "'" + action + "'" , "'" + timestamp+ "'", userid, username, nsnum, pagetitle, pageid, comment, params, '0' ])
+
+        line = "( %s );\n" % ", ".join(
+            [logid, "'" + type + "'", "'" + action + "'", "'" + timestamp + "'",
+             userid, username, nsnum, pagetitle, pageid, comment, params, '0'])
         logOutFd.write(unicode(line).encode('utf-8'))
 
         if self.userOutFile and userid not in self.userDict:
-            line = "INSERT INTO user ( user_id, user_name, user_real_name, user_password, user_newpassword, user_newpass_time, user_email, user_touched, user_token, user_email_authenticated, user_email_token, user_email_token_expires, user_registration, user_editcount ) VALUES "
+            line = ("INSERT INTO user ( user_id, user_name, user_real_name, " +
+                    "user_password, user_newpassword, user_newpass_time, " +
+                    "user_email, user_touched, user_token, user_email_authenticated, " +
+                    "user_email_token, user_email_token_expires, user_registration, " +
+                    "user_editcount ) VALUES ")
             userOutFd.write(unicode(line).encode('utf-8'))
-            line = "( %s );\n" % ", ".join([ userid, username, "''", "''", "''", "NULL", "''", "'20010101000000'", "'6f9b27b447a7fd49bc525e51cc82320b'", "NULL", "NULL", "NULL", "NULL", "0" ])
+            line = "( %s );\n" % ", ".join(
+                [userid, username, "''", "''", "''", "NULL", "''",
+                 "'20010101000000'", "'6f9b27b447a7fd49bc525e51cc82320b'",
+                 "NULL", "NULL", "NULL", "NULL", "0"])
             userOutFd.write(unicode(line).encode('utf-8'))
-            
+
             self.userDict[userid] = True
 
         return False
 
     def writeSql(self):
-        self.userDict = { 1: True }
+        self.userDict = {1: True}
         fd = File.openInput(self.xmlFile)
         logOutFd = File.openOutput(self.logOutFile)
         if self.userOutFile:
@@ -343,43 +371,52 @@ class LoggingXml(object):
         if self.userOutFile:
             userOutFd.close()
         return
-            
-def usage(message = None):
+
+
+def usage(message=None):
     """Show usage and help information. Arguments:
     message   -- message to be shown (e.g. error message) before the help"""
 
     if message:
         sys.stderr.write(message)
         sys.stderr.write("\n")
-    sys.stderr.write("Usage: python %s --lang langcode --project filename --sqlfile filename\n" % sys.argv[0])
-    sys.stderr.write("                 --logfile filename --logout filename [--userout filename]\n")
-    sys.stderr.write("\n")
-    sys.stderr.write("This script converts a pages-logging.xml file to an sql file suitable for\n")
-    sys.stderr.write("import into the logging table of a MediaWiki installation.\n")
-    sys.stderr.write("It may get some things wrong because page ids of page titles can change\n")
-    sys.stderr.write("over time and this program isn't clever about how it looks that up.\n")
-    sys.stderr.write("We needed this script for testing logging dumps.  If you need it for production\n")
-    sys.stderr.write("purposes, better test it carefully.\n")
-    sys.stderr.write("\n")
-    sys.stderr.write("Options:\n")
-    sys.stderr.write("\n")
-    sys.stderr.write("--lang         the language code of the project from which the logging table was dumped,\n")
-    sys.stderr.write("               i.e. en, fr, el etc.\n")
-    sys.stderr.write("--project      the type of wiki from which the logging table was dumped, i.e. wikipedia,\n")
-    sys.stderr.write("               wiktionary, wikisource, etc.\n")
-    sys.stderr.write("--sqlfile      path to an sql fle containing fields pageid namespacenum pagetitle space-\n")
-    sys.stderr.write("               separated and one triple per line, pagetitle should be sql escaped as it\n")
-    sys.stderr.write("               would be if written out by mysqldump, and it should not contain the namespace\n")
-    sys.stderr.write("               prefix.\n")
-    sys.stderr.write("--loggingfile  path to the xml pages-logging file to be converted\n")
-    sys.stderr.write("--logout       path to the file where the converted sql will be written\n")
-    sys.stderr.write("--userout      path to file where fake user table sql will be written, if specified\n")
-    sys.stderr.write("               the user table is used when generating xml dumps of the log table;\n")
-    sys.stderr.write("               any user id found in the logging sql file with non null username will\n")
-    sys.stderr.write("               be added except for the user with uid 1, yes this is a hack\n")
-    sys.stderr.write("               Make sure that there are no other users except uid 1 already in the table\n")
-    sys.stderr.write("               and that the username is not in the produced sql BEFORE using it for import\n")
+    usage_message = """Usage: python pageslogging2sql.py --lang langcode --project filename
+           --sqlfile filename --logfile filename --logout filename
+           [--userout filename]
+
+This script converts a pages-logging.xml file to an sql file suitable
+for import into the logging table of a MediaWiki installation.
+It may get some things wrong because page ids of page titles can change
+over time and this program isn't clever about how it looks that up.
+We needed this script for testing logging dumps.  If you need it for
+production purposes, better test it carefully.
+
+Options:
+
+--lang         the language code of the project from which the logging
+               table was dumped, i.e. en, fr, el etc.
+--project      the type of wiki from which the logging table was dumped,
+               i.e. wikipedia, wiktionary, wikisource, etc.
+--sqlfile      path to an sql fle containing fields pageid namespacenum
+               pagetitle space-separated and one triple per line, pagetitle
+               should be sql escaped as it would be if written out by
+               mysqldump, and it should not contain the namespace
+               prefix.
+--loggingfile  path to the xml pages-logging file to be converted
+--logout       path to the file where the converted sql will be written
+--userout      path to file where fake user table sql will be written, if
+               specified
+               the user table is used when generating xml dumps of the log
+               table; any user id found in the logging sql file with non
+               null username will be added except for the user with uid 1,
+               yes this is a hack
+               Make sure that there are no other users except uid 1 already
+               in the table and that the username is not in the produced sql
+               BEFORE using it for import
+"""
+    sys.stderr.write(usage_message)
     sys.exit(1)
+
 
 if __name__ == "__main__":
     langCode = None
@@ -390,7 +427,8 @@ if __name__ == "__main__":
     userOutFile = None
 
     try:
-        (options, remainder) = getopt.gnu_getopt(sys.argv[1:], "", [ "lang=", "project=", "sqlfile=", "loggingfile=", "logout=", "userout=" ] )
+        (options, remainder) = getopt.gnu_getopt(
+            sys.argv[1:], "", ["lang=", "project=", "sqlfile=", "loggingfile=", "logout=", "userout="])
     except:
         usage("Unknown option specified")
 
@@ -398,7 +436,7 @@ if __name__ == "__main__":
 
         # main opts
         if opt == "--lang":
-            langCode = val;
+            langCode = val
         elif opt == "--project":
             project = val
         elif opt == "--sqlfile":
@@ -410,7 +448,7 @@ if __name__ == "__main__":
         elif opt == "--userout":
             userOutFile = val
         else:
-            usage("Unknown option specified: %s" % opt )
+            usage("Unknown option specified: %s" % opt)
 
     if len(remainder) > 0:
         usage("Unknown option specified: <%s>" % remainder[0])
@@ -437,5 +475,3 @@ if __name__ == "__main__":
     titlesDict = td.getTitlesDict(sqlFile)
     lx = LoggingXml(nsDictByString, titlesDict, loggingFile, logOutFile, userOutFile)
     lx.writeSql()
-
-    

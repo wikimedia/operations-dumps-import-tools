@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-import re, gzip, bz2
+import re
+import gzip
+
 
 class File(object):
     """open bz2, gz and uncompressed files"""
@@ -49,7 +51,7 @@ class File(object):
             inHeader = True
             inFd = File.openInput(f)
             for line in inFd:
-                if (i +1 < listLen): # skip footer of all files but last one
+                if (i + 1 < listLen):  # skip footer of all files but last one
                     if compiledEndMediaWikiPattern.match(line):
                         continue
                 if i and inHeader:  # skip header of all files but first one
@@ -58,6 +60,6 @@ class File(object):
                 else:
                     outFd.write(line)
             inFd.close()
-            i = i +1
+            i = i + 1
 
         outFd.close()
