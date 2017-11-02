@@ -81,7 +81,7 @@ class WikiConnection(object):
                         return contents
                 sys.stderr.write("status %s, reason %s\n" % (http_result.status, http_result.reason))
                 raise httplib.HTTPException
-        except:
+        except Exception:
             sys.stderr.write("failed to retrieve output from %s\n" % url)
             return None
 

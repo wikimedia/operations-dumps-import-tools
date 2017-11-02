@@ -429,8 +429,8 @@ def do_main():
     try:
         (options, remainder) = getopt.gnu_getopt(
             sys.argv[1:], "", ["lang=", "project=", "sqlfile=", "loggingfile=", "logout=", "userout="])
-    except:
-        usage("Unknown option specified")
+    except getopt.GetoptError as e:
+        usage(e.msg)
 
     for (opt, val) in options:
 

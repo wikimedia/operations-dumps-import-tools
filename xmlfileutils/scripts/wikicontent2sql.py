@@ -731,8 +731,8 @@ def do_main():
                    convert_xml_filter_sql_options + misc_flags)
     try:
         (options, remainder) = getopt.gnu_getopt(sys.argv[1:], "", all_options)
-    except:
-        usage("Unknown option specified")
+    except getopt.GetoptError as e:
+        usage(e.msg)
 
     for (opt, val) in options:
 
